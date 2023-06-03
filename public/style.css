@@ -1,0 +1,246 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header {
+  background-color: #f9f9f9;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+}
+
+nav {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+}
+
+header h1 {
+  margin: 0;
+  padding: 0;
+  font-size: 36px;
+  display: inline-block;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+  float: right;
+}
+
+nav ul li {
+  display: inline-block;
+}
+
+nav ul li a {
+  display: block;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #333;
+}
+
+nav ul li a:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+main {
+  padding: 50px 0;
+}
+
+h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+form {
+  margin-bottom: 40px;
+}
+
+label {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-box label {
+  margin-right: 10px;
+}
+
+.search-box input[type="text"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+}
+
+.search-btn {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background-color: #555;
+}
+
+/* (A) LIST STYLES */
+.slist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.slist li {
+  margin: 10px;
+  padding: 15px;
+  border: 1px solid #dfdfdf;
+  border-radius: 5px;
+  background: #f5f5f5;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* (B) DRAG-AND-DROP HINT */
+.slist li.hint {
+  border: 1px solid #ffc49a;
+  background: #feffb4;
+}
+.slist li.active {
+  border: 1px solid #ffa5a5;
+  background: #d9ead3;
+}
+
+/* (X) DOES NOT MATTER */
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+
+/* (C) DAYS AND MEAL-ORDER */
+#meal-plan {
+  display: flex;
+}
+#days {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+#days p1 {
+  gap: 20px;
+  padding: 25px;
+  float: left;
+  margin-top: 20px;
+  margin-left: -10px
+  width: 70px;
+  text-align: right;
+  font-weight: bold;
+}
+#mealOrder {
+  flex: 3;
+}
+
+#results li {
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+#results li:hover {
+  background-color: #eee;
+}
+.recipe-details {
+  display: none;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.expanded .recipe-details {
+  display: block;
+}
+
+.recipe-container {
+  display: flex;
+  justify-content: space-between; /* add this line */
+  align-items: center;
+}
+
+.recipe-name {
+  font-size: 1rem;
+  margin-right: 1rem;
+}
+
+/* Reroll button */
+.btnContainer {
+  display: inline-block;
+}
+
+.reroll-btn {
+  margin-right: 10px;
+}
+
+.like-btn {
+  margin-right: 10px;
+}
+
+#ing-sortlist {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#ing-sortlist li {
+
+  /*margin: 5px;
+  padding: 5px;*/
+  border: 1px solid #dfdfdf;
+  border-radius: 5px;
+  background: #f5f5f5;
+  width: 20% !important;
+  box-sizing: border-box;
+}
+
+#mealplanContainer {
+  height: 50%;
+}
+
+.cardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mealplanContainer {
+  float:left;
+}
+
+.preload-02 { background: url("images/remove.png") no-repeat -9999px -9999px; }
+.preload-01 { background: url("images/dice.png") no-repeat -9999px -9999px; }
+.preload-03 { background: url("images/like.png") no-repeat -9999px -9999px; }
+.preload-04 { background: url("images/arrow-left.png") no-repeat -9999px -9999px; }
+.preload-05 { background: url("images/arrow-right.png") no-repeat -9999px -9999px; }

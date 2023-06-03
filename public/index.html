@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Meal Planner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <div class="preload-01"></div>
+    <div class="preload-02" ></div>
+    <div class="preload-03" ></div>
+    <div class="preload-04" ></div>
+    <div class="preload-05" ></div>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>Osiris Meal Planner</h1>
+        <nav>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">My Meals</a></li>
+            <li><a href="/register.html">Login</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <div class="container">
+        <form action="/search.html">
+          <div class="search-box">
+            <input type="text" id="keywords" name="keywords" style="border-top-right-radius: 0%; border-bottom-right-radius: 0%;" placeholder="e.g. beef, pasta, stroganoff">
+            <button type="submit" class="search-btn" style="border-top-left-radius: 0%; border-bottom-left-radius: 0%; padding: 12px;">Search</button>
+          </div>
+
+
+
+        </form>
+        <button type="submit" class="search-btn" onclick="genMealPlan()">Generate Meal Plan</button>
+        <!--<p>The 'day' text is not aligned with the draggable boxes, RIP</p>
+        <p>Add a slist of the top 20 recipes for the week, add a + button on recipe search to add the recipe list, the user can arrange their favourite and save it. Add the top 20 recipe list to the userMeals table.</p><br>
+        <p>I think it would be better if you showed alternate recipes for each recipe, this should be easy cause I already get alternate ones and choose a random one, I could return the whole list.</p><-->
+        <div id="mealplanContainer">
+          <div id="meal-plan">
+            <div id="dayss">
+              <span><strong>Monday:</strong></span>
+              <span><strong>Tuesday:</strong></span>
+              <span><strong>Wednesday:</strong></span>
+              <span><strong>Thursday:</strong></span>
+              <span><strong>Friday:</strong></span>
+              <span><strong>Saturday:</strong></span>
+              <span><strong>Sunday:</strong></span>
+            </div>
+            <div id="mealOrder">
+              <ul id="sortlist">
+
+              </ul>
+            </div>
+          </div>
+        </div>
+        <input type="button" class="search-btn" value="Save" onclick="saveMealPlan()">
+        <input type="button" class="search-btn" value="Get Shopping List" onclick="getShoppingList()">
+        <div id="ingredients">
+          <ul id="ing-sortlist">
+
+          </ul>
+        </div>
+            <script>
+                  status = 0
+                  savedIndexes = [0,0,0,0,0,0,0]
+                  generatedRecipes = []
+                  currentCardIndex = 0
+                    function loadMealPlan() {
+                      sortList = document.getElementById('mealOrder').childNodes[1]
+                      fetch("/currentMealPlan", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                      })
+                        .then(r => (r.json()))
+                        .then(recipes => {
+                          if(recipes[0] != "LoggedOut") {
+                            for(i = 0; i < recipes.length; i++) {
+
+                              if(recipes[i].length != 0) {
+                                const listItem = createRecipeInfo(recipes[i][0]);
+                                sortList.appendChild(listItem);
+                                slist(document.getElementById("sortlist"));
+                              }else{
+                                const listItem = createRecipeInfo(recipes[i],1);
+                                sortList.appendChild(listItem,1);
+                                slist(document.getElementById("sortlist"));
+                              }
+                            }
+                          }
+                        })
+                    }
+
+
+                    function saveMealPlan() {
+                      meals = document.getElementsByClassName("recipe-container")
+                      mealPlan = ""
+                      for(i = 0; i < meals.length; i++) {
+                        mealPlan += meals[i].recipeID + ","
+                      }
+                      fetch("/save", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'mealPlan':mealPlan})
+                      })
+                    }
+
+                    function createRecipeInfo(recipe, blank=0) {
+                      if(blank == 1) {
+                        const listItem = document.createElement('li');
+                        const recipeDetails = document.createElement("div");
+
+                        // Create recipe container
+                        const recipeContainer = document.createElement('div');
+                        recipeContainer.recipeID = -1
+                        recipeContainer.classList.add('recipe-container');
+                        listItem.appendChild(recipeContainer);
+
+                        //Recipe Name
+                        const recipeName = document.createElement("p");
+                        recipeName.innerHTML = `<strong class="recipe-name">No Recipe Selected</strong>`;
+                        recipeContainer.appendChild(recipeName);
+
+                        const rerollBtn = document.createElement('input'); // add this line
+                        rerollBtn.type = "image"
+                        rerollBtn.src = "images/dice.png"
+                        rerollBtn.height = 25
+                        rerollBtn.width = 25
+                        rerollBtn.alt = "Re-Roll"
+                        rerollBtn.classList.add('reroll-btn'); // add this line
+                        recipeContainer.appendChild(rerollBtn);
+
+                        recipeContainer.addEventListener('click', (event) => {
+                          if(event.target.classList.contains('reroll-btn')){
+                            event.stopPropagation()
+                            //console.log(event.target)
+                            fetch("/mealplan", {
+                              method: 'POST',
+                              headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'bad':event.target.recipeID})
+                            })
+                              .then(r => r.json())
+                              .then(newRecipe => {
+                                const newRecipeCard = createRecipeInfo(newRecipe[0]);
+                                listItem.replaceWith(newRecipeCard);
+                                slist(document.getElementById("sortlist"));
+                              });
+                           }
+                        });
+                        return listItem
+                      }
+                      //console.log(recipe)
+                      const listItem = document.createElement('li');
+
+
+                      const recipeDetails = document.createElement("div");
+
+                      // Create recipe container
+                      const recipeContainer = document.createElement('div');
+                      recipeContainer.recipeID = recipe.recipeID
+                      recipeContainer.classList.add('recipe-container');
+                      listItem.appendChild(recipeContainer);
+
+                      //Recipe Name
+                      const recipeName = document.createElement("p");
+                      recipeName.innerHTML = `<strong class="recipe-name">${recipe.recipeName}</strong>`;
+                      recipeContainer.appendChild(recipeName);
+
+                      const buttonContainer = document.createElement('div')
+
+                      const likeBtn = document.createElement('input'); // add this line
+                      likeBtn.type = "image"
+                      likeBtn.src = "images/like.png"
+                      likeBtn.height = 25
+                      likeBtn.width = 25
+                      likeBtn.alt = "Like"
+                      likeBtn.classList.add('like-btn'); // add this line
+                      likeBtn.recipeID = recipe.recipeID
+                      buttonContainer.appendChild(likeBtn);
+
+                      const rerollBtn = document.createElement('input'); // add this line
+                      rerollBtn.type = "image"
+                      rerollBtn.src = "images/dice.png"
+                      rerollBtn.height = 25
+                      rerollBtn.width = 25
+                      rerollBtn.alt = "Re-Roll"
+                      rerollBtn.classList.add('reroll-btn'); // add this line
+                      rerollBtn.recipeID = recipe.recipeID
+                      buttonContainer.appendChild(rerollBtn);
+
+                      const removeBtn = document.createElement('input'); // add this line
+                      removeBtn.type = "image"
+                      removeBtn.src = "images/remove.png"
+                      removeBtn.height = 25
+                      removeBtn.width = 25
+                      removeBtn.alt = "Remove"
+                      removeBtn.classList.add('remove-btn'); // add this line
+                      buttonContainer.appendChild(removeBtn);
+
+                      recipeContainer.appendChild(buttonContainer)
+
+                      listItem.addEventListener('click', (event) => {
+                         if (!event.target.classList.contains('reroll-btn') && !event.target.classList.contains('remove-btn') && !event.target.classList.contains('like-btn') && !event.target.classList.contains('left-btn')) {
+                           //event.stopPropagation();
+                           if (listItem.classList.contains('expanded')) {
+                             listItem.classList.toggle('expanded');
+                           } else {
+                             const expandedCards = document.querySelectorAll('.expanded');
+                             expandedCards.forEach((card) => card.classList.toggle('expanded'));
+                             listItem.classList.add('expanded');
+                           }
+                         }else if(event.target.classList.contains('reroll-btn')){
+                           event.stopPropagation()
+                           //console.log(event.target)
+                           fetch("/mealplan", {
+                             method: 'POST',
+                             headers: {
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'bad':event.target.recipeID})
+                           })
+                             .then(r => r.json())
+                             .then(newRecipe => {
+                               const newRecipeCard = createRecipeInfo(newRecipe[0]);
+                               listItem.replaceWith(newRecipeCard);
+                               slist(document.getElementById("sortlist"));
+                             });
+                         }else if(event.target.classList.contains('remove-btn')) {
+                           event.stopPropagation()
+                           listItem.replaceWith(createRecipeInfo(0,1))
+                         }else if(event.target.classList.contains('like-btn')){
+                           event.stopPropagation();
+                           fetch("/like", {
+                             method: 'POST',
+                             headers: {
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'recipeID':event.target.recipeID})
+                           });
+                           recipeContainer.parentElement.style.border = "1px solid blue"
+                        }
+                      });
+
+                      //Instructions & Ingredients (not modified)
+                      steps=""
+                      JSON.parse(recipe.steps).forEach(step => {
+                        steps+="<br><br>    -"+step
+                      });
+                      ingredients = ""
+                      recipe.ingredients.forEach(ingredient => {
+                        ingredients+="<br>    -"+ingredient.procText
+                      });
+
+                      //Expanded data (not modified)
+                      recipeDetails.classList.add("recipe-details");
+                      recipeDetails.innerHTML = `
+                        <p><strong>Recipe ID:</strong> ${recipe.recipeID}
+                        <p><strong>Prep Time:</strong> ${recipe.prepTime}</p>
+                        <p><strong>Cook Time:</strong> ${recipe.cookTime}</p>
+                        <p><strong>Servings:</strong> ${recipe.serves}</p>
+                        <p><strong>Saves:</strong> ${recipe.saves}</p>
+                        <p><strong>(Very) Rough Cost:</strong> ${Math.round(Math.floor(parseFloat(recipe.cost)*100),0)/100}</p>
+                        <p><strong>Instructions:</strong>${steps}</p>
+                        <br>
+                        <p><strong>Ingredients:</strong>${ingredients}</p>
+                      `;
+                      recipeDetails.recipeID = recipe.recipeID
+
+                      listItem.appendChild(recipeDetails);
+
+                      listItem.classList.add("slist-item")
+                      return listItem;
+                    }
+
+                    function getIngredientInfo(ingredient) {
+                      const listItem = document.createElement('li');
+
+                      // Create recipe container
+                      const recipeContainer = document.createElement('div');
+                      recipeContainer.recipeID = ingredient.ingredientID
+                      recipeContainer.classList.add('recipe-container');
+
+
+                      //Ingredient Name
+                      const ingredientInfo = document.createElement("div");
+                      ingredientInfo.innerHTML = `<p>Ingredient: <strong class="recipe-name">${ingredient.procText}</strong></p><p>Required By: ${ingredient.requiredBy}`;
+                      recipeContainer.appendChild(ingredientInfo);
+
+                      /*const requiredBy = document.createElement("p1");
+                      requiredBy.innerHTML = `Required By: ${ingredient.requiredBy}`;
+                      recipeContainer.appendChild(requiredBy);*/
+
+                      const buttonContainer = document.createElement('div')
+
+                      const removeBtn = document.createElement('input'); // add this line
+                      removeBtn.type = "image"
+                      removeBtn.src = "images/remove.png"
+                      removeBtn.height = 25
+                      removeBtn.width = 25
+                      removeBtn.alt = "Remove"
+                      removeBtn.classList.add('remove-btn'); // add this line
+                      buttonContainer.appendChild(removeBtn);
+
+                      recipeContainer.appendChild(buttonContainer)
+
+                      listItem.addEventListener('click', (event) => {
+                        if(event.target.classList.contains('remove-btn')) {
+                           event.stopPropagation()
+                           listItem.remove()
+                         }
+                      });
+
+
+                      listItem.appendChild(recipeContainer);
+                      listItem.classList.add("slist-item")
+                      return listItem;
+                    }
+
+                    function addScrollButtons(listItem,cID = -1) {
+                      const cardContainer = document.createElement('div')
+                      cardContainer.classList.add("cardContainer")
+                      ind = -1
+                      if(cID != -1) {
+                        ind = savedIndexes[cID]
+                      }
+                      if(ind != 0 && cID != -1) {
+                        const leftButton = document.createElement('input')
+                        leftButton.type = "image"
+                        leftButton.src = "images/arrow-left.png"
+                        leftButton.height = 25
+                        leftButton.width = 25
+                        leftButton.alt = "Left"
+                        leftButton.classList.add('left-btn'); // add this line
+                        cardContainer.appendChild(leftButton);
+                      }
+
+                      cardContainer.appendChild(listItem)
+
+                      if(ind != 2) {
+                        const rightButton = document.createElement('input')
+                        rightButton.type = "image"
+                        rightButton.src = "images/arrow-right.png"
+                        rightButton.height = 25
+                        rightButton.width = 25
+                        rightButton.alt = "Right"
+                        rightButton.classList.add('right-btn'); // add this line
+                        cardContainer.appendChild(rightButton);
+                      }
+
+                      if(cID == -1) {
+                        cardContainer.addEventListener('click', (event) => {
+                          if(event.target.classList.contains('left-btn')) {
+                             event.stopPropagation()
+                             cycleRecipe(0,event.target.parentElement.cardID)
+                           }else if(event.target.classList.contains('right-btn')) {
+                              event.stopPropagation()
+                              cycleRecipe(1,event.target.parentElement.cardID)
+                           }
+                        });
+                        cardContainer.cardID = currentCardIndex
+                        currentCardIndex+=1
+                      }else{
+                        cardContainer.addEventListener('click', (event) => {
+                          if(event.target.classList.contains('left-btn')) {
+                             event.stopPropagation()
+                             cycleRecipe(0,cID)
+                           }else if(event.target.classList.contains('right-btn')) {
+                              event.stopPropagation()
+                              cycleRecipe(1,cID)
+                           }
+                        });
+                        cardContainer.cardID = currentCardIndex
+                      }
+                      cardContainer.classList.add("slist-item")
+                      return cardContainer
+                    }
+                    function genAltRecipes() {
+                      sortList = document.getElementById('altRecipes')
+                      if(sortList.childElementCount > 6) {
+                        sortList.innerHTML = ""
+                      }
+                      prom = new Promise(async (resolve, reject) => {
+                      for (i = 0; i < 7; i++) {
+                        await fetch("/mealplan", {
+                          method: 'POST',
+                          headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                        })
+                          .then(r => (r.json()))
+                          .then(recipe => {
+                            const listItem = createRecipeInfo(recipe[0]);
+                            listItem.classList.add("slist-item")
+                            sortList.appendChild(listItem);
+                            slist(document.getElementById("altRecipes"));
+                            slist(document.getElementById("sortlist"));
+                          })
+                      }
+                      resolve()
+                    })
+                    prom.then(() => {
+                      mealDiv = document.getElementById("altRecipes")
+                      meals = mealDiv.getElementsByTagName("li")
+                      mealPlan = ""
+                      for(i = 0; i < meals.length; i++) {
+                        mealPlan += meals[i].childNodes[0].recipeID + ","
+                      }
+                      fetch("/saveAltRecipes", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'altRecipes':mealPlan})
+                      })
+                    })
+                    }
+                    function cycleRecipe(dir,cardID) {
+                      sortList = document.getElementById('sortlist')
+                      var listItem = "";
+                      if(dir) {
+                        savedIndexes[cardID] += 1
+                        listItem = createRecipeInfo(generatedRecipes[cardID][savedIndexes[cardID]]);
+                      }else{
+                        savedIndexes[cardID] -= 1
+                        listItem = createRecipeInfo(generatedRecipes[cardID][savedIndexes[cardID]]);
+                      }
+                      sortList.children[cardID].replaceWith(addScrollButtons(listItem,cardID));
+                      slist(document.getElementById("altRecipes"));
+                      slist(document.getElementById("sortlist"));
+                    }
+                    async function genMealPlan() {
+                      sortList = document.getElementById('sortlist')
+                      if(sortList.childElementCount > 6) {
+                        sortList.innerHTML = ""
+                      }
+                      for (i = 0; i < 7; i++) {
+                         fetch("/mealplan", {
+                          method: 'POST',
+                          headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                        })
+                          .then(r => (r.json()))
+                          .then(recipes => {
+                            console.log(recipes)
+                            generatedRecipes.push(recipes)
+                            recipe = recipes[savedIndexes[i-1]]
+                            console.log(i)
+                            const listItem = addScrollButtons(createRecipeInfo(recipe));
+                            sortList.appendChild(listItem);
+                            slist(document.getElementById("altRecipes"));
+                            slist(document.getElementById("sortlist"));
+                          })
+                      }
+                    }
+                    function getShoppingList() {
+                      sortList = document.getElementById('ing-sortlist')
+                      fetch("/getIngredients", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                      })
+                        .then(r => (r.json()))
+                        .then(ingredients => {
+                          for(let i in ingredients) {
+                            const listItem = getIngredientInfo(ingredients[i]);
+                            sortList.appendChild(listItem);
+                          }
+                          slist(sortList)
+                        })
+                    }
+                    loadMealPlan()
+            </script>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <div class="container">
+        <p>&copy; 2023 Mae</p>
+      </div>
+    </footer>
+  </body>
+</html>

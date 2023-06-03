@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="searchStyles.css">
+    <title>Recipe Search</title>
+  </head>
+  <body>
+    <header>
+      <div id="homeBtn" onclick="location.href = '/';">
+        <h1>Osiris</h1>
+      </div>
+      <center>
+        <form id="search-form">
+          <input type="text" name="keywords" id="search-box" placeholder="Search Recipes..." value="">
+          <button type="submit">Search</button>
+          <!--<div action="" class="search-container">
+
+            <br>
+            <span id="advanced-search-label">Advanced Search Options</span>
+            <div class="advanced-search">
+              <div class="search-box">
+                <label for="serves">Serves</label>
+                <input type="number" id="serves" name="serves" value="4" max="10" min="1" style="width:60px"/>
+                <label for="prepTime">Prep Time</label>
+                <input type="number" id="prepTime" name="prepTime" value="45" min="1" style="width:60px"/>
+
+                <label for="cookTime">Cooking Time</label>
+                <input type="number" id="cookTime" name="cookTime" value="45" min="1" style="width:60px"/>
+                <label for="show">Result Count</label>
+                <input type="number" id="show" name="show" value="30" max="100" min="10" style="width:60px">
+              </div>
+            </div>
+          </div>-->
+        </form>
+        </center>
+    </header>
+
+    <main>
+      <div id="advancedSearchDiv">
+        <form id="advancedSearch">
+          <label for="serves">Serves</label>
+          <input type="number" id="serves" name="serves" value="4" max="10" min="1" style="width:60px"/><br><br>
+          <label for="prepTime">Prep Time</label>
+          <input type="number" id="prepTime" name="prepTime" value="45" min="1" style="width:60px"/><br><br>
+
+          <label for="cookTime">Cooking Time</label>
+          <input type="number" id="cookTime" name="cookTime" value="45" min="1" style="width:60px"/><br><br>
+          <label for="show">Result Count</label>
+          <input type="number" id="show" name="show" value="30" max="100" min="10" style="width:60px"><br><br>
+          <button type="submit">Filter</button><br>
+        </form>
+      </div>
+      <ul id="results"></ul>
+    </main>
+
+    <script src="searchScript.js"></script>
+  </body>
+  <footer>
+    <div class="container">
+
+    </div>
+  </footer>
+</html>

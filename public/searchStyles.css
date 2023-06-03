@@ -1,0 +1,294 @@
+/* Reset styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Global styles */
+body {
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+
+  padding: 10px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+form {
+  display: flex;
+  align-items: center;
+}
+
+
+input[type="number"] {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  margin-right: 10px;
+  font-size: 1rem;
+  width: 300px;
+}
+
+button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #fff;
+  color: #3f51b5;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #3f51b5;
+  color: #fff;
+}
+
+main {
+  margin: 20px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+
+a {
+  color: #3f51b5;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#results li {
+  border: 1px solid #dfdfdf;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #f5f5f5;
+}
+
+#results li:hover {
+  background-color: #eee;
+}
+
+.recipe-details {
+  display: none;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.expanded .recipe-details {
+  display: block;
+}
+
+#search-form {
+  padding: 10px;
+  width: 500%;
+  margin-left: auto;
+}
+
+#se {
+  border: none;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 300px;
+  margin-right: 10px;
+}
+
+#serves-input {
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  width: 100px;
+  margin-right: 10px;
+}
+
+button[type="submit"] {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 50px;
+  margin-left: 5px;
+}
+
+button[type="submit"]:hover {
+  background-color: #555;
+}
+
+body {
+  margin: 0;
+}
+
+header {
+  background-color: #f2f2f2;
+  padding: 20px;
+  position: relative;
+}
+
+h1 {
+  margin: 0;
+}
+
+.search-container {
+  display: inline-block;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: auto;
+}
+
+.advanced-search {
+  display: none;
+  position: inherit;
+  /*top: 100%;
+  left: -30%;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;*/
+  z-index: 1;
+}
+
+.advanced-search.active {
+  display: inline-block;
+}
+
+#advanced-search-label {
+  cursor: pointer;
+}
+
+#search-box {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: 1rem;
+  width: 70%;
+  height: 50px;
+}
+
+#advSearch-box {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: 1rem;
+  height: 30px;
+}
+
+@media screen and (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-container>* {
+    margin-bottom: 10px;
+  }
+
+  .advanced-search {
+    top: 70px;
+  }
+}
+
+main {
+  height: 100%;
+  overflow: auto;
+  word-wrap: break-word;
+}
+
+#advancedSearch {
+  display: table-row-group;
+  height: 100%;
+}
+
+#advancedSearch>input[type="number"] {
+  margin-left: 5px;
+  border: 1px solid black;
+}
+
+#advancedSearchDiv {
+  width: 14%;
+  float: left;
+  border: 1px solid black;
+  height: 100%;
+  word-wrap: break-word;
+}
+
+#results {
+  width: 85%;
+  float: right;
+}
+
+#advanced-search {
+  display: none;
+}
+#advanced-search-label {
+  cursor: pointer;
+  text-decoration: underline;
+}
+#search-form {
+  transition: all 0.5s ease;
+  height: 70px;
+}
+#search-form.expanded {
+  height: 120px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.recipe-details {
+  display: none;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.expanded .recipe-details {
+  display: block;
+}
+
+.recipe-container {
+  display: flex;
+  justify-content: space-between; /* add this line */
+  align-items: center;
+}
+
+.recipe-name {
+  font-size: 1rem;
+  margin-right: 1rem;
+}
+
+/* Reroll button */
+.btnContainer {
+  display: inline-block;
+}
+
+.like-btn {
+  margin-right: 10px;
+}
