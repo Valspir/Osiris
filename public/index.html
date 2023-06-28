@@ -42,14 +42,14 @@
         <p>I think it would be better if you showed alternate recipes for each recipe, this should be easy cause I already get alternate ones and choose a random one, I could return the whole list.</p><-->
         <div id="mealplanContainer">
           <div id="meal-plan">
-            <div id="dayss">
-              <span><strong>Monday:</strong></span>
-              <span><strong>Tuesday:</strong></span>
-              <span><strong>Wednesday:</strong></span>
-              <span><strong>Thursday:</strong></span>
-              <span><strong>Friday:</strong></span>
-              <span><strong>Saturday:</strong></span>
-              <span><strong>Sunday:</strong></span>
+            <div id="days">
+              <p1><strong>Monday:</strong></p1>
+              <p1><strong>Tuesday:</strong></p1>
+              <p1><strong>Wednesday:</strong></p1>
+              <p1><strong>Thursday:</strong></p1>
+              <p1><strong>Friday:</strong></p1>
+              <p1><strong>Saturday:</strong></p1>
+              <p1><strong>Sunday:</strong></p1>
             </div>
             <div id="mealOrder">
               <ul id="sortlist">
@@ -90,9 +90,11 @@
                                 sortList.appendChild(listItem);
                                 slist(document.getElementById("sortlist"));
                               }else{
-                                const listItem = createRecipeInfo(recipes[i],1);
-                                sortList.appendChild(listItem,1);
-                                slist(document.getElementById("sortlist"));
+                                if(recipes.length < 6) {
+                                  const listItem = createRecipeInfo(recipes[i],1);
+                                  sortList.appendChild(listItem,1);
+                                  slist(document.getElementById("sortlist"));
+                                }
                               }
                             }
                           }

@@ -153,11 +153,10 @@ label {
 }
 #days p1 {
   gap: 20px;
-  padding: 25px;
+  padding-bottom: 50px;
+  border-left: 0px;
   float: left;
   margin-top: 20px;
-  margin-left: -10px
-  width: 70px;
   text-align: right;
   font-weight: bold;
 }
@@ -238,6 +237,7 @@ label {
 .mealplanContainer {
   float:left;
 }
+
 
 .preload-02 { background: url("images/remove.png") no-repeat -9999px -9999px; }
 .preload-01 { background: url("images/dice.png") no-repeat -9999px -9999px; }
