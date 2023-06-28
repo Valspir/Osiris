@@ -264,7 +264,7 @@ function login(req,res) {
   email=req.body[0]
   passwordHash = req.body[1]
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE email='${email}'` //STILL DOESN'T WORK - CHECK PASSWORD
+  sql = `SELECT userID FROM userInfo WHERE email='${email}' AND password='${passwordHash}'`
   var rows=usersDB.prepare(sql).all()
   if(rows.length != 0) {
     const id = crypto.randomBytes(16).toString("hex");
@@ -362,9 +362,14 @@ function getIngredients(req,res) {
     return
   }
   userID = rows[0].userID
-  sql = `SELECT nextMealJSON FROM userMeals WHERE userID = '${userID}'`
-  rows = usersDB.prepare(sql).all()
-  nextRecipes = rows[0].nextMealJSON.toString().split(",")
+
+  sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
+  mealID = usersDB.prepare(sql).all()[0]['mealID']
+
+  s = `SELECT mealArr FROM Meals WHERE mealID = '${mealID}'`
+  mP = mealDB.prepare(s).all()[0]['mealArr']
+
+  nextRecipes = mP.toString().split(",")
   shoppingList = []
   for (let m in nextRecipes) {
     recipeID = parseInt(nextRecipes[m])
@@ -379,7 +384,7 @@ function getIngredients(req,res) {
         for(let li in shoppingList) {
           listItem = shoppingList[li]
           listItemID = listItem.ingredientID
-          if(listItemID == ingredientID) {
+          if(listItemID == ingredientID || listItem.procText == ingredientText) {
             inArr = 1
             listItem.requiredBy+=','+recipeID
           }
@@ -395,7 +400,6 @@ function getIngredients(req,res) {
 }
 
 function atMP(req,res) {
-  console.log(req.body)
   sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
@@ -407,7 +411,6 @@ function atMP(req,res) {
   sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC LIMIT 1`
   rows = usersDB.prepare(sql).all()
   mealID = rows[0]['mealID']
-  console.log(mealID)
 
   sql = `SELECT * FROM Meals WHERE mealID = ${mealID}`
   mealArr = mealDB.prepare(sql).all()[0]['mealArr']
@@ -427,7 +430,42 @@ function register(req,res) {
   rows = usersDB.prepare(sql).run()
 
 
-  res.json({"status":"Success", "sessionID":id})
+  res.redirect('/')
+}
+
+function mymeals(req,res) {
+  allMeals = []
+  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  rows = usersDB.prepare(sql).all()
+  if(rows.length == 0) {
+    res.json(["LoggedOut"])
+    return
+  }
+  userID = rows[0].userID
+
+  sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC`
+  rows = usersDB.prepare(sql).all()
+  
+  for(r in rows) {
+    mealPlan = []
+    row = rows[r]
+    sql = `SELECT mealArr FROM Meals WHERE mealID = ${row.mealID}`
+    sql_out = mealDB.prepare(sql).all()
+    console.log(sql_out[0]['mealArr'])
+    str = sql_out[0]['mealArr'].split(",")
+    for(s in str) {
+      m = str[s]
+      if(m == -1) {
+        mealPlan.push("No Recipe")
+      }else if(m != "") {
+        sql = `SELECT recipeName FROM Recipes WHERE recipeID = ${m}`
+        sql_out = db.prepare(sql).all()
+        mealPlan.push(sql_out[0]['recipeName'])
+      }
+    }
+    allMeals.push(mealPlan)
+  }
+  res.json(allMeals)
 }
 
 var indexRouter = require('./routes/index');
@@ -458,7 +496,7 @@ app.use('/saveAltRecipes', async (req,res) => saveAltRecipes(req,res))
 app.use('/getIngredients', async (req,res) => getIngredients(req,res))
 app.use('/getIngredients', async (req,res) => getIngredients(req,res))
 app.use('/register', async (req,res) => register(req,res))
-
+app.use('/myMeals', async (req,res) => mymeals(req,res))
 
 
 // catch 404 and forward to error handler

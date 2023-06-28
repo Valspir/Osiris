@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Meal Planner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+    <div class="preload-01"></div>
+    <div class="preload-02" ></div>
+    <div class="preload-03" ></div>
+    <div class="preload-04" ></div>
+    <div class="preload-05" ></div>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>Osiris Meal Planner</h1>
+        <nav>
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="/meals.html">My Meals</a></li>
+            <li><a href="/login.html">Login</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main>
+
+      
+    </main>
+    <script>
+        function loadMeals() {
+            fetch("/myMeals", {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+            })
+            .then(r => (r.json()))
+                .then(recipes => {
+                if(recipes[0] != "LoggedOut") {
+                    for(i = 0; i < recipes.length; i++) {
+                        console.log(recipes[i])
+                    }
+                }
+            })
+        }
+        loadMeals()
+    </script>
+</body>

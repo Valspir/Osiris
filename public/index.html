@@ -19,7 +19,7 @@
         <nav>
           <ul>
             <li><a href="#">Home</a></li>
-            <li><a href="#">My Meals</a></li>
+            <li><a href="/meals.html">My Meals</a></li>
             <li><a href="/login.html">Login</a></li>
           </ul>
         </nav>
@@ -488,11 +488,16 @@
                       })
                         .then(r => (r.json()))
                         .then(ingredients => {
+                          str = ""
                           for(let i in ingredients) {
-                            const listItem = getIngredientInfo(ingredients[i]);
-                            sortList.appendChild(listItem);
+                            ing = ingredients[i]
+                            str+=ing.procText+": \n    -Required By: "+ing.requiredBy+"\n"
+                            /*const listItem = getIngredientInfo(ingredients[i]);
+                            sortList.appendChild(listItem);*/
                           }
-                          slist(sortList)
+                          document.getElementById('ingredients').innerText = str
+                          console.log(str)
+                          //slist(sortList)
                         })
                     }
                     loadMealPlan()
