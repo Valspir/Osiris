@@ -10,7 +10,7 @@ const crypto = require("crypto");
 
 var usersDB = new sqlite("./data/Users.db");
 var db = new sqlite("./data/processedData.db");
-
+var mealDB = new sqlite("./data/meals.db");
 
 async function get7recipes(req) {
   highID = req["_parsedOriginalUrl"]["query"].split("=")[1]
@@ -218,12 +218,19 @@ function the_ALGORITHM(sql,user) {
                 ) DESC
             LIMIT 5
             `;
+      rand = Math.round(Math.floor(Math.random()*4))
+      if(rand == 1) {
+        s = `SELECT recipeID as Recipe2ID, recipeName as Recipe2Name FROM Recipes WHERE recipeID=${recipeID}`
+        var r = db.prepare(s).all();
+        allRows.push(r[0])
+      }
       var rows = db.prepare(not_sql).all();
       for(row in rows) {
         if(!(allRows.includes(rows[row]))) {
           allRows.push(rows[row])
         }
       }
+      
     }catch{
       continue
     }
@@ -257,7 +264,7 @@ function login(req,res) {
   email=req.body[0]
   passwordHash = req.body[1]
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE email='${email}'`
+  sql = `SELECT userID FROM userInfo WHERE email='${email}'` //STILL DOESN'T WORK - CHECK PASSWORD
   var rows=usersDB.prepare(sql).all()
   if(rows.length != 0) {
     const id = crypto.randomBytes(16).toString("hex");
@@ -290,26 +297,16 @@ function save(req, res) {
   sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   userID = rows[0].userID
+  
+  sql = `INSERT INTO Meals(mealArr) VALUES ('${mealArr}')`
+  mealDB.prepare(sql).run()
+  sql = `SELECT last_insert_rowid()`
+  mealID = mealDB.prepare(sql).all()[0]['last_insert_rowid()']
+  sql = `UPDATE Meals SET mealID = ${mealID} WHERE mealArr = '${mealArr}'`
+  mealDB.prepare(sql).run()
 
-  sql = `SELECT nextMealJSON, previousMealsJSON FROM userMeals WHERE userID = ${userID}`
-  var rows=usersDB.prepare(sql).all()
-  if(rows.length != 0) {
-    lastMeal = rows[0].nextMealJSON
-    mealString = rows[0].previousMealsJSON
-    prevArr = mealString.split("|")
-    if(prevArr.length == 23) {
-      //console.log(prevArr[1:23])
-      /*prevArrTMP.length-=1
-      console.log(prevArrTMP)
-      prevArr=prevArrTMP*/
-    }
-    mealString += lastMeal+"|"
-    sql = `UPDATE userMeals SET nextMealJSON='${mealArr}',previousMealsJSON='${mealString}' WHERE userID = ${userID}`
-    usersDB.prepare(sql).run()
-  }else{
-    sql = `INSERT INTO userMeals(userID,nextMealJSON,previousMealsJSON) VALUES (${userID}, '${mealArr}', '')`
-    usersDB.prepare(sql).run()
-  }
+  sql = `INSERT INTO userMeals(userID,mealID) VALUES (${userID},${mealID})`
+  usersDB.prepare(sql).run()
   res.json({"status":200})
 }
 
@@ -323,9 +320,13 @@ function getCurrentMeal(req, res) {
   }
   userID = rows[0].userID
 
-  sql = `SELECT nextMealJSON FROM userMeals WHERE userID = '${userID}'`
-  rows = usersDB.prepare(sql).all()
-  nextRecipes = rows[0].nextMealJSON.toString().split(",")
+  sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
+  mealID = usersDB.prepare(sql).all()[0]['mealID']
+
+  s = `SELECT mealArr FROM Meals WHERE mealID = '${mealID}'`
+  mP = mealDB.prepare(s).all()[0]['mealArr']
+
+  nextRecipes = mP.toString().split(",")
   allRecipeInfo = []
   for(j = 0; j < nextRecipes.length-1; j++) {
   //  console.log(nextRecipes[i])
@@ -395,6 +396,25 @@ function getIngredients(req,res) {
 
 function atMP(req,res) {
   console.log(req.body)
+  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  rows = usersDB.prepare(sql).all()
+  if(rows.length == 0) {
+    res.json(["LoggedOut"])
+    return
+  }
+  userID = rows[0].userID
+
+  sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC LIMIT 1`
+  rows = usersDB.prepare(sql).all()
+  mealID = rows[0]['mealID']
+  console.log(mealID)
+
+  sql = `SELECT * FROM Meals WHERE mealID = ${mealID}`
+  mealArr = mealDB.prepare(sql).all()[0]['mealArr']
+  mealArr += req.body.recipeID+","
+  s = `UPDATE Meals SET mealArr = '${mealArr}' WHERE mealID = ${mealID}`
+  mealDB.prepare(s).run()
+  res.json({"status":200})
 }
 
 function register(req,res) {
