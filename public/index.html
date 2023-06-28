@@ -165,7 +165,7 @@
                         });
                         return listItem
                       }
-                      console.log(recipe)
+                      //console.log(recipe)
                       const listItem = document.createElement('li');
 
 
@@ -440,11 +440,6 @@
                       var listItem = "";
                       if(dir) {
                         savedIndexes[cardID] += 1
-                        console.log("------")
-                        console.log(generatedRecipes)
-                        console.log(cardID)
-                        console.log(savedIndexes)
-                        console.log("-------")
                         listItem = createRecipeInfo(generatedRecipes[cardID][savedIndexes[cardID]]);
                       }else{
                         savedIndexes[cardID] -= 1
@@ -473,7 +468,6 @@
                             console.log(recipes)
                             generatedRecipes.push(recipes)
                             recipe = recipes[savedIndexes[i-1]]
-                            console.log(i)
                             const listItem = addScrollButtons(createRecipeInfo(recipe));
                             sortList.appendChild(listItem);
                             slist(document.getElementById("altRecipes"));
