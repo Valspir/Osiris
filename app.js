@@ -264,7 +264,7 @@ function login(req,res) {
   email=req.body[0]
   passwordHash = req.body[1]
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE email='${email}' AND password='${passwordHash}'`
+  sql = `SELECT userID FROM userInfo WHERE email='${email}' AND passwordHash='${passwordHash}'`
   var rows=usersDB.prepare(sql).all()
   if(rows.length != 0) {
     const id = crypto.randomBytes(16).toString("hex");

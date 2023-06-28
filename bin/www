@@ -27,8 +27,8 @@ const options = {
 var httpsServer = https.createServer(options, app);
 
 
-httpsServer.listen(8443);
-httpServer.listen(3000);
+httpsServer.listen(443);
+httpServer.listen(80);
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -12,7 +12,7 @@
 </form>
 <script>
   function mae() {
-    creds = ["mae@groovy.com",""]
+    creds = ["mae@groovy.com","password"]
     fetch('/login', {
       method: 'POST',
       headers: {
@@ -24,6 +24,9 @@
     if(response.status == "Success") {
       sessionStorage.setItem("sessionID", response.sessionID)
       document.location = "/"
+    }else{
+      console.log(creds)
+      console.log(response)
     }
   }))
   }

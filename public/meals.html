@@ -24,13 +24,26 @@
           </ul>
         </nav>
       </div>
+      <style>
+        #mealDiv {
+          border-style: solid;
+          width: 30%;
+        }
+        #mealDiv p{
+          border-style: solid;
+        }
+      </style>
     </header>
     <main>
+      <center>
+        <div id="mealGrid">
 
-      
+        </div>
+      </center>
     </main>
     <script>
         function loadMeals() {
+            mealGrid = document.getElementById('mealGrid')
             fetch("/myMeals", {
               method: 'POST',
               headers: {
@@ -43,8 +56,15 @@
                 .then(recipes => {
                 if(recipes[0] != "LoggedOut") {
                     for(i = 0; i < recipes.length; i++) {
-                        console.log(recipes[i])
+                        mealDiv = document.createElement('div')
+                        mealDiv.id = 'mealDiv';
+                        meals = recipes[i].toString().split(",")
+                        for(j = 0; j < meals.length; j+=1) {
+                          mealDiv.innerHTML += `<p>${meals[j]}</p>`
+                        }
+                        mealGrid.append(mealDiv)
                     }
+                    
                 }
             })
         }

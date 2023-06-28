@@ -165,7 +165,7 @@
                         });
                         return listItem
                       }
-                      //console.log(recipe)
+                      console.log(recipe)
                       const listItem = document.createElement('li');
 
 
@@ -440,6 +440,11 @@
                       var listItem = "";
                       if(dir) {
                         savedIndexes[cardID] += 1
+                        console.log("------")
+                        console.log(generatedRecipes)
+                        console.log(cardID)
+                        console.log(savedIndexes)
+                        console.log("-------")
                         listItem = createRecipeInfo(generatedRecipes[cardID][savedIndexes[cardID]]);
                       }else{
                         savedIndexes[cardID] -= 1
@@ -475,6 +480,9 @@
                             slist(document.getElementById("sortlist"));
                           })
                       }
+                      savedIndexes = [0,0,0,0,0,0,0]
+                      generatedRecipes = []
+                      currentCardIndex = 0
                     }
                     function getShoppingList() {
                       sortList = document.getElementById('ing-sortlist')
