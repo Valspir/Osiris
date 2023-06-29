@@ -272,6 +272,7 @@ function login(req,res) {
     var rows=usersDB.prepare(sql).run()
     res.json({"status":"Success", "sessionID":id})
   }else{
+    console.log(req.body)
     res.json({"status":"Invalid User"})
   }
 
