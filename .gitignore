@@ -2,4 +2,3 @@ data/fullchain.pem
 data/privkey.pem
 data/Users.db
 node_modules/
-package-lock.json
