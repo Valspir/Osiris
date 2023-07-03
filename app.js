@@ -68,7 +68,7 @@ function search(req,res) {
     var argName = allArgs[i].split("=")[0];
     var argValue = allArgs[i].split("=")[1];
     if(argName == "keywords") {
-      argValue = argValue.replace("+", " ").replace("%2C",",").split(",")
+      argValue = argValue.replace(/\+/g, " ").replace("%2C",",").split(",")
       for(let j = 0; j < argValue.length; j++) {
         if(j > 0) {
           sql += " AND "
@@ -320,38 +320,43 @@ function getCurrentMeal(req, res) {
     return
   }
   userID = rows[0].userID
+  try {
+    sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
+    mealID = usersDB.prepare(sql).all()[0]['mealID']
 
-  sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
-  mealID = usersDB.prepare(sql).all()[0]['mealID']
 
-  s = `SELECT mealArr FROM Meals WHERE mealID = '${mealID}'`
-  mP = mealDB.prepare(s).all()[0]['mealArr']
 
-  nextRecipes = mP.toString().split(",")
-  allRecipeInfo = []
-  for(j = 0; j < nextRecipes.length-1; j++) {
-  //  console.log(nextRecipes[i])
-    sql = `SELECT * FROM Recipes WHERE recipeID=${parseInt(nextRecipes[j])}`
-    /*console.log(rows)
-    for(row in rows) {
-      if(row != 0) {
-        sql += " OR "
+    s = `SELECT mealArr FROM Meals WHERE mealID = '${mealID}'`
+    mP = mealDB.prepare(s).all()[0]['mealArr']
+
+    nextRecipes = mP.toString().split(",")
+    allRecipeInfo = []
+    for(j = 0; j < nextRecipes.length-1; j++) {
+    //  console.log(nextRecipes[i])
+      sql = `SELECT * FROM Recipes WHERE recipeID=${parseInt(nextRecipes[j])}`
+      /*console.log(rows)
+      for(row in rows) {
+        if(row != 0) {
+          sql += " OR "
+        }
+        sql += `recipeID=${rows[row]}`
+      }*/
+      rows = db.prepare(sql).all();
+
+      allInfo = []
+      for(i = 0; i < rows.length; i++) {
+        row = rows[i]
+        sql = `SELECT AD.altText as procText FROM (SELECT Ingredients.recipeID as recipeID, Ingredients.ingredientID as ingredientID, AltText.altText as altText FROM Ingredients INNER JOIN AltText ON Ingredients.ingredientID=AltText.ingredientID WHERE Ingredients.recipeID=${row.recipeID} GROUP BY AltText.ingredientID) as AD INNER JOIN Recipes ON AD.recipeID=Recipes.recipeID`
+        ret = db.prepare(sql).all();
+        row.ingredients = ret
+        allInfo.push(row)
       }
-      sql += `recipeID=${rows[row]}`
-    }*/
-    rows = db.prepare(sql).all();
-
-    allInfo = []
-    for(i = 0; i < rows.length; i++) {
-      row = rows[i]
-      sql = `SELECT AD.altText as procText FROM (SELECT Ingredients.recipeID as recipeID, Ingredients.ingredientID as ingredientID, AltText.altText as altText FROM Ingredients INNER JOIN AltText ON Ingredients.ingredientID=AltText.ingredientID WHERE Ingredients.recipeID=${row.recipeID} GROUP BY AltText.ingredientID) as AD INNER JOIN Recipes ON AD.recipeID=Recipes.recipeID`
-      ret = db.prepare(sql).all();
-      row.ingredients = ret
-      allInfo.push(row)
+      allRecipeInfo.push(allInfo)
     }
-    allRecipeInfo.push(allInfo)
+    res.json(allRecipeInfo)
+  }catch{
+    res.json({"Status":"Failed"})
   }
-  res.json(allRecipeInfo)
 }
 
 function getIngredients(req,res) {
@@ -422,16 +427,17 @@ function atMP(req,res) {
 }
 
 function register(req,res) {
-  email = req.body.email
-  password = req.body.password
+  email=req.body[0]
+  password = req.body[1]
   id = crypto.randomBytes(16).toString("hex");
+  console.lo
 
   
   sql = `INSERT INTO userInfo(email,passwordHash,sessionID) VALUES ('`+email+`','`+password+`','`+id+`')`
   rows = usersDB.prepare(sql).run()
 
 
-  res.redirect('/')
+  res.json({"status":"Success", "sessionID":id})
 }
 
 function mymeals(req,res) {
