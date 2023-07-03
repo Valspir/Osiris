@@ -478,6 +478,12 @@ function mymeals(req,res) {
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+var RateLimit = require('express-rate-limit');
+var limiter = RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 20
+});
+
 var app = express();
 
 // view engine setup
@@ -489,8 +495,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(serveStatic('public', { index: ['index3.html']}));
+app.use(limiter);
+app.use(serveStatic('public', { index: ['index.html']}));
 app.use('/recipes', async (req,res) => get7recipes(req).then(r => res.json(r)));
 app.use('/search', async (req,res) => search(req,res))//.then(r => res.json(r)));
 app.use('/mealplan', async (req,res) => genMealPlan(req,res))
