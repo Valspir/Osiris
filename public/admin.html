@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<head>
+    <title>Admin</title>
+</head>
+<body>
+  <div id="hiddenBody" hidden>
+    <button id="shutdown" onclick="shutdown()">Shutdown</button>
+    <textarea id="serverLog"></textarea>
+  </div>
+
+    <script>
+        function shutdown() {
+            fetch("/admin", {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'1'})
+            }).then(r => (r.json())).then(r => console.log(r[0]))
+        }
+        function checkPerms() {
+          fetch("/admin", {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'3'})
+            })
+            .then(r => (r.json()))
+            .then(r => {
+              if(r.Status == "Success") {
+                document.getElementById("hiddenBody").hidden = false
+              }
+            })
+        }
+        checkPerms()
+
+        function getLog() {
+          fetch("/admin", {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'4'})
+            })
+            .then(r => (r.text()))
+            .then(r => {
+              console.log(r)
+              document.getElementById("serverLog").value=r
+            })
+        }
+        getLog()
+    </script>
+</body>

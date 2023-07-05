@@ -20,7 +20,7 @@
           <ul>
             <li><a href="#">Home</a></li>
             <li><a href="/meals.html">My Meals</a></li>
-            <li><a href="/login.html">Login</a></li>
+            <li><a id="loginBtn" href="/login.html">Login</a></li>
           </ul>
         </nav>
       </div>
@@ -454,26 +454,41 @@
                       if(sortList.childElementCount > 6) {
                         sortList.innerHTML = ""
                       }
-                      for (i = 0; i < 7; i++) {
-                         fetch("/mealplan", {
-                          method: 'POST',
-                          headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                          },
-                          body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
-                        })
-                          .then(r => (r.json()))
-                          .then(recipes => {
-                            console.log(recipes)
-                            generatedRecipes.push(recipes)
-                            recipe = recipes[savedIndexes[i-1]]
+                      fetch("/mealplan", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                      })
+                        .then(r => (r.json()))
+                        .then(recipes => {
+                          const result = [];
+                          for (let i = 0; i < recipes.length; i += 3) {
+                            const recipeSet = [];
+                            
+                            // Extract recipeIDs from each row and push them into the recipeSet array
+                            for (let j = i; j < i + 3; j++) {
+                              recipeSet.push(recipes[j]);
+                            }
+                            
+                            // Push the recipeSet array into the result array
+                            result.push(recipeSet);
+                          }
+                          for(p = 0; p < result.length; p+=1) {
+                            generatedRecipes.push(result[p])
+                            const recipe = result[p][savedIndexes[p]]
+                            console.log(recipe)
+                            console.log(p)
+                            console.log(result)
+                            console.log("------------------")
                             const listItem = addScrollButtons(createRecipeInfo(recipe));
                             sortList.appendChild(listItem);
                             slist(document.getElementById("altRecipes"));
                             slist(document.getElementById("sortlist"));
-                          })
-                      }
+                          }                          
+                        })
                       savedIndexes = [0,0,0,0,0,0,0]
                       generatedRecipes = []
                       currentCardIndex = 0
@@ -503,6 +518,42 @@
                         })
                     }
                     loadMealPlan()
+                    document.body.onload = function() {
+                      fetch("/getUserInfo", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+                      })
+                        .then(r => (r.json()))
+                        .then(info => {
+                          if(info[0] != "LoggedOut") {
+                            if(info[1] == 1) {
+                              document.getElementById("loginBtn").href = ""
+                              document.getElementById("loginBtn").outerHTML = "<a href='#' id='loginBtn' onclick='adminCheck(this)'></p>"
+                            }
+                            document.getElementById("loginBtn").innerHTML = info[0]
+                          }
+                        })
+                    }
+                    function adminCheck(event) {
+                      //event.preventDefault()
+                      fetch("/admin", {
+                        method: 'POST',
+                        headers: {
+                          'Accept': 'application/json',
+                          'Content-Type': 'application/json'
+                        },
+                        
+                        body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'2'})
+                      }).then(r => {
+                        if (r.redirected) {
+                            window.location.href = r.url;
+                        }
+                      })
+                    }
             </script>
           </div>
         </div>

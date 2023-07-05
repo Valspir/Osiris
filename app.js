@@ -6,7 +6,7 @@ var logger = require('morgan');
 var serveStatic = require('serve-static');
 var sqlite = require("better-sqlite3");
 const crypto = require("crypto");
-
+const fs = require('fs')
 
 var usersDB = new sqlite("./data/Users.db");
 var db = new sqlite("./data/processedData.db");
@@ -26,7 +26,8 @@ async function get7recipes(req) {
   return rows;
 }
 
-
+var access = fs.createWriteStream('server.log');
+process.stdout.write = process.stderr.write = access.write.bind(access);
 
 function findRecipe(keywords,serves) {
   sql = "SELECT recipeID,recipeName,meat,cost FROM Recipes WHERE serves > ?"
@@ -153,25 +154,29 @@ function genMealPlan(req,res) {
     rows = db.prepare(sql).all()
     row = rows
   }else{
-    row = the_ALGORITHM(randsql, userTastes)
+    row = the_ALGORITHM(userTastes)
   }
   allInfo = []
+  
   for(j = 0; j < row.length; j++) {
-    r = row[j]
-    sql = `SELECT * FROM Recipes WHERE recipeID=${r.Recipe2ID}`
-    rows = db.prepare(sql).all();
-    for(i = 0; i < rows.length; i++) {
-      ingRow = rows[i]
-      sql = `SELECT AD.altText as procText FROM (SELECT Ingredients.recipeID as recipeID, Ingredients.ingredientID as ingredientID, AltText.altText as altText FROM Ingredients INNER JOIN AltText ON Ingredients.ingredientID=AltText.ingredientID WHERE Ingredients.recipeID=${ingRow.recipeID} GROUP BY AltText.ingredientID) as AD INNER JOIN Recipes ON AD.recipeID=Recipes.recipeID`
-      ret = db.prepare(sql).all();
-      ingRow.ingredients = ret
-      allInfo.push(ingRow)
+    nR = row[j]
+    for(p = 0; p < nR.length; p++) {
+      r = nR[p]
+      sql = `SELECT * FROM Recipes WHERE recipeID=${r}`
+      rows = db.prepare(sql).all();
+      for(i = 0; i < rows.length; i++) {
+        ingRow = rows[i]
+        sql = `SELECT AD.altText as procText FROM (SELECT Ingredients.recipeID as recipeID, Ingredients.ingredientID as ingredientID, AltText.altText as altText FROM Ingredients INNER JOIN AltText ON Ingredients.ingredientID=AltText.ingredientID WHERE Ingredients.recipeID=${ingRow.recipeID} GROUP BY AltText.ingredientID) as AD INNER JOIN Recipes ON AD.recipeID=Recipes.recipeID`
+        ret = db.prepare(sql).all();
+        ingRow.ingredients = ret
+        allInfo.push(ingRow)
+      }
     }
   }
   res.json(allInfo)
 }
 
-function the_ALGORITHM(sql,user) {
+/*function the_ALGORITHM(user) {
   allRows = []
   maxLen = 20;
   tasteProfile = []
@@ -192,32 +197,45 @@ function the_ALGORITHM(sql,user) {
   for(recipeKey = 0; recipeKey < maxLen; recipeKey++) {
     try {
       recipeID = tasteProfile[recipeKey].recipeID
-      not_sql = `SELECT
-              i1.recipeID as Recipe1ID,
-              (
-              	SELECT
-              		Recipes.recipeName
-              	FROM Recipes
-              		WHERE recipeID=i1.recipeID
-              ) as Recipe1Name,
-              r2.recipeID as Recipe2ID,
-              r2.recipeName as Recipe2Name
-            FROM Ingredients AS i1
-            JOIN Ingredients AS i2
-            	ON i1.ingredientID = i2.ingredientID
-            	AND i1.recipeID = ${recipeID}
-            	AND i2.recipeID <> i1.recipeID
-            JOIN (${sql}) AS r2
-            	ON i2.recipeID = r2.recipeID
-            GROUP BY r2.recipeID
-            ORDER BY ROUND(
-              (COUNT(*) * 100.0 /
-                    (SELECT COUNT(*) FROM Ingredients WHERE recipeID = i1.recipeID) +
-                    (SELECT COUNT(*) FROM Ingredients WHERE recipeID = r2.recipeID) -
-                    COUNT(CASE WHEN i1.recipeID = r2.recipeID THEN 1 ELSE NULL END)),2
-                ) DESC
-            LIMIT 5
-            `;
+      not_sql = `WITH RandomRecipes AS (
+                  SELECT * FROM Recipes ORDER BY RANDOM() LIMIT 25
+                ),
+                RecipeCounts AS (
+                  SELECT
+                    i1.recipeID AS Recipe1ID,
+                    r2.recipeID AS Recipe2ID,
+                    COUNT(*) AS MatchCount
+                  FROM Ingredients AS i1
+                  JOIN Ingredients AS i2
+                    ON i1.ingredientID = i2.ingredientID
+                    AND i1.recipeID = ${recipeID}
+                    AND i2.recipeID <> i1.recipeID
+                  JOIN RandomRecipes AS r2
+                    ON i2.recipeID = r2.recipeID
+                  JOIN Recipes AS r1
+                    ON i1.recipeID = r1.recipeID
+                  GROUP BY i1.recipeID, r2.recipeID
+                ),
+                RankedRecipes AS (
+                  SELECT
+                    Recipe1ID,
+                    Recipe2ID,
+                    MatchCount,
+                    ROUND(
+                      (MatchCount * 100.0 /
+                      (COUNT(*) FILTER (WHERE Recipe1ID = Recipe2ID)) +
+                      COUNT(*) FILTER (WHERE Recipe1ID = ${recipeID})), 2
+                    ) AS MatchPercentage,
+                    RANK() OVER (ORDER BY RANDOM() * RANDOM()) AS RandomRank
+                  FROM RecipeCounts
+                )
+                SELECT
+                  Recipe1ID,
+                  Recipe2ID,
+                FROM RankedRecipes
+                WHERE RandomRank <= 5
+                ORDER BY RandomRank;
+                `;
       rand = Math.round(Math.floor(Math.random()*4))
       if(rand == 1) {
         s = `SELECT recipeID as Recipe2ID, recipeName as Recipe2Name FROM Recipes WHERE recipeID=${recipeID}`
@@ -225,6 +243,7 @@ function the_ALGORITHM(sql,user) {
         allRows.push(r[0])
       }
       var rows = db.prepare(not_sql).all();
+      console.log(rows)
       for(row in rows) {
         if(!(allRows.includes(rows[row]))) {
           allRows.push(rows[row])
@@ -239,7 +258,66 @@ function the_ALGORITHM(sql,user) {
   //rec = Math.round(Math.random()*4)
   //console.log(allRows.slice(0,3))
   return allRows.slice(0,3)
+}*/
+
+function the_ALGORITHM(user, i) {
+  const allRows = [];
+
+  const tasteProfile = user.slice(0, i); // Read the first `i` recipeIDs from tasteProfile
+
+  const recipeIDs = tasteProfile.map(recipe => recipe.recipeID); // Extract recipeIDs from tasteProfile
+
+  const sql = `WITH RecipeCounts AS (
+                SELECT
+                  i2.recipeID AS Recipe2ID,
+                  COUNT(*) AS MatchCount,
+                  (COUNT(*) * 100.0 / r1.IngredientCount + COUNT(*) * 100.0 / r2.IngredientCount) AS MatchPercentage
+                FROM Ingredients AS i1
+                JOIN Ingredients AS i2 ON i1.ingredientID = i2.ingredientID
+                JOIN (
+                  SELECT recipeID, COUNT(*) AS IngredientCount
+                  FROM Ingredients
+                  GROUP BY recipeID
+                ) AS r1 ON i1.recipeID = r1.recipeID
+                JOIN (
+                  SELECT recipeID, COUNT(*) AS IngredientCount
+                  FROM Ingredients
+                  GROUP BY recipeID
+                ) AS r2 ON i2.recipeID = r2.recipeID
+                WHERE i1.recipeID IN (${recipeIDs.join(', ')}) AND i2.recipeID <> i1.recipeID
+                GROUP BY i1.recipeID, i2.recipeID, r1.IngredientCount, r2.IngredientCount
+              ),
+              RankedRecipes AS (
+                SELECT
+                  Recipe2ID,
+                  ROW_NUMBER() OVER (PARTITION BY Recipe2ID ORDER BY MatchCount DESC) AS RowNum
+                FROM RecipeCounts
+              )
+              SELECT DISTINCT
+                r.Recipe2ID
+              FROM RankedRecipes AS r
+              WHERE r.RowNum <= 3
+              ORDER BY RANDOM()
+              LIMIT 21;
+              `;
+  //console.log(sql)
+  const rows = db.prepare(sql).all();
+  const result = [];
+  for (let i = 0; i < rows.length; i += 3) {
+    const recipeSet = [];
+    
+    // Extract recipeIDs from each row and push them into the recipeSet array
+    for (let j = i; j < i + 3; j++) {
+      const recipeID = rows[j].Recipe2ID;
+      recipeSet.push(recipeID);
+    }
+    
+    // Push the recipeSet array into the result array
+    result.push(recipeSet);
+  }
+  return result;
 }
+
 
 function like(req, res) {
   userID = -1
@@ -429,11 +507,12 @@ function atMP(req,res) {
 function register(req,res) {
   email=req.body[0]
   password = req.body[1]
+  fName = req.body[2]
   id = crypto.randomBytes(16).toString("hex");
   console.lo
 
   
-  sql = `INSERT INTO userInfo(email,passwordHash,sessionID) VALUES ('`+email+`','`+password+`','`+id+`')`
+  sql = `INSERT INTO userInfo(email,passwordHash,sessionID,firstName) VALUES ('${email}','${password}','${id}','${fName}')`
   rows = usersDB.prepare(sql).run()
 
 
@@ -475,13 +554,76 @@ function mymeals(req,res) {
   res.json(allMeals)
 }
 
+function getUserInfo(req,res) {
+  sql = `SELECT firstName,userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  rows = usersDB.prepare(sql).all()
+  if(rows.length == 0) {
+    res.json(["LoggedOut"])
+    return
+  }
+  fName = rows[0].firstName
+  userID = rows[0].userID
+  res.json([fName,userID])
+}
+
+function admin(req,res) {
+  //console.log(req.body.sessionID)
+  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  rows = usersDB.prepare(sql).all()
+  if(rows.length == 0) {
+    console.log("LO")
+    res.json(["LoggedOut"])
+    return
+  }
+  userID = rows[0].userID
+  if(userID == 1) {
+    console.log({'User': userID, 'Action': req.body.actionID})
+    if(req.body.actionID == '1') {
+      console.log("Shutdown by userID: " + userID)
+      res.json({'Action':'Shutdown', 'Status': 'Success', 'userID': userID})
+      exit()
+    }else if(req.body.actionID == '2') {
+      console.log(__dirname+'adm/admin.html')
+      res.redirect('admin.html');
+    }else if(req.body.actionID == '3') {
+      res.json({'Status':'Success'})
+      //return
+    }else if(req.body.actionID == '4') {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Transfer-Encoding', 'chunked');
+      stream = fs.createReadStream("server.log", 'utf-8');
+      stream.on('error', function (error) {
+          console.log(`error: ${error.message}`);
+      })
+      i = 0
+
+      stream.on('data', (chunk) => {
+          i+=1
+          data = chunk.replace(/\n[0-9]+/,'')
+          data = data.replace(/[^a-zA-Z0-9\n ]/g, '')
+          res.write(data);
+          if(i > 25) {
+            res.end()
+            stream.close()
+          }
+      })
+      
+      //res.write()
+      //return
+    }
+  }else{
+    res.json(["Nope"])
+  }
+}
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var RateLimit = require('express-rate-limit');
+const { exit } = require('process');
 var limiter = RateLimit({
   windowMs: 1*60*1000, // 1 minute
-  max: 20
+  max: 40
 });
 
 var app = express();
@@ -510,6 +652,8 @@ app.use('/getIngredients', async (req,res) => getIngredients(req,res))
 app.use('/getIngredients', async (req,res) => getIngredients(req,res))
 app.use('/register', async (req,res) => register(req,res))
 app.use('/myMeals', async (req,res) => mymeals(req,res))
+app.use('/getUserInfo', async (req,res) => getUserInfo(req,res))
+app.use('/admin', async (req,res) => admin(req,res))
 
 
 // catch 404 and forward to error handler

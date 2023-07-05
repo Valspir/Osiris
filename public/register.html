@@ -1,11 +1,111 @@
 <!DOCTYPE html>
+<html>
 <head>
   <title>Register</title>
   <script src="registerScript.js"></script>
   <!--<stylesheet src="loginStyle.css"/>-->
 </head>
 <body>
-      <input id="email" type="email" name="email" placeholder="email">
-    <input id="password" type="password" name="password" placeholder="password">
-    <button onclick="register()">Submit</button>
-  </body>
+  <header>
+    <div class="container">
+      <h1>Register</h1>
+    </div>
+  </header>
+  <main>
+    <div class="container">
+        <div class="form-group">
+          <label for="fName">First Name:</label>
+          <input id="fName" type="text" name="fName" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input id="email" type="email" name="email" placeholder="Email">
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input id="password" type="password" name="password" placeholder="Password">
+        </div>
+        <button onclick="register()">Submit</button>
+    </div>
+  </main>
+  <script>
+    // Your script code goes here
+  </script>
+</body>
+</html>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  header {
+    background-color: #f9f9f9;
+    padding: 20px 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  header h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 36px;
+  }
+
+  main {
+    padding: 50px 0;
+  }
+
+  form {
+    margin-bottom: 40px;
+  }
+
+  .form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; /* Adjusted margin */
+  }
+
+  label {
+    flex: 1;
+    font-size: 20px;
+    margin-bottom: 0;
+    margin-right: 10px; /* Added margin */
+  }
+
+  input[type="email"],
+  input[type="text"],
+  input[type="password"] {
+    flex: 3;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    width: 100%;
+  }
+
+  button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #555;
+  }
+</style>

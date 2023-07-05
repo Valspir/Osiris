@@ -18,56 +18,75 @@
         <h1>Osiris Meal Planner</h1>
         <nav>
           <ul>
-            <li><a href="#">Home</a></li>
+            <li><a href="/">Home</a></li>
             <li><a href="/meals.html">My Meals</a></li>
-            <li><a href="/login.html">Login</a></li>
+            <li><a id="loginBtn" href="/login.html">Login</a></li>
           </ul>
         </nav>
       </div>
       <style>
-        #mealDiv {
-          border-style: solid;
-          width: 30%;
+        #mealGrid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjust the minimum width (300px) and the grid ratio as needed */
+          gap: 20px; /* Adjust the gap between grid items as needed */
         }
-        #mealDiv p{
+
+        .mealDiv {
           border-style: solid;
+          padding: 10px; /* Add padding to the grid items */
         }
       </style>
     </header>
     <main>
       <center>
-        <div id="mealGrid">
-
-        </div>
+        <div id="mealGrid"></div>
       </center>
     </main>
     <script>
-        function loadMeals() {
-            mealGrid = document.getElementById('mealGrid')
-            fetch("/myMeals", {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
-            })
-            .then(r => (r.json()))
-                .then(recipes => {
-                if(recipes[0] != "LoggedOut") {
-                    for(i = 0; i < recipes.length; i++) {
-                        mealDiv = document.createElement('div')
-                        mealDiv.id = 'mealDiv';
-                        meals = recipes[i].toString().split(",")
-                        for(j = 0; j < meals.length; j+=1) {
-                          mealDiv.innerHTML += `<p>${meals[j]}</p>`
-                        }
-                        mealGrid.append(mealDiv)
-                    }
-                    
-                }
-            })
-        }
-        loadMeals()
+      function loadMeals() {
+        const mealGrid = document.getElementById('mealGrid');
+        fetch("/myMeals", {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+        })
+        .then(r => (r.json()))
+        .then(recipes => {
+          if (recipes[0] !== "LoggedOut") {
+            for (let i = 0; i < recipes.length; i++) {
+              const mealDiv = document.createElement('div');
+              mealDiv.classList.add('mealDiv');
+              const meals = recipes[i].toString().split(",");
+              for (let j = 0; j < meals.length; j++) {
+                const p = document.createElement('p');
+                p.textContent = meals[j];
+                mealDiv.appendChild(p);
+              }
+              mealGrid.appendChild(mealDiv);
+            }
+          }
+        });
+      }
+      loadMeals();
+      document.body.onload = function() {
+        fetch("/getUserInfo", {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID")})
+        })
+          .then(r => (r.json()))
+          .then(info => {
+            str = ""
+            document.getElementById("loginBtn").innerHTML = info
+            //slist(sortList)
+          })
+      }
     </script>
-</body>
+  </body>
+</html>

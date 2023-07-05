@@ -1,7 +1,8 @@
 function register() {
   email = document.getElementById("email").value.toLowerCase()
   password = document.getElementById("password").value
-  creds = [email,password]
+  fName = document.getElementById("fName").value
+  creds = [email,password,fName]
   fetch('/register', {
     method: 'POST',
     headers: {
