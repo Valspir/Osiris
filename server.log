@@ -1,5 +1,0 @@
-Listening on port 443
-[0mGET /admin.html [32m200 [0m4.675 ms - 1760[0m
-{ User: [33m1[39m, Action: [32m'3'[39m }
-[0mPOST /admin [32m200 [0m13.974 ms - 20[0m
-{ User: [33m1[39m, Action: [32m'4'[39m }

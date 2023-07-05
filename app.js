@@ -26,7 +26,7 @@ async function get7recipes(req) {
   return rows;
 }
 
-var access = fs.createWriteStream('server.log');
+var access = fs.createWriteStream('server.log', 'utf-8');
 process.stdout.write = process.stderr.write = access.write.bind(access);
 
 function findRecipe(keywords,serves) {
@@ -599,9 +599,9 @@ function admin(req,res) {
 
       stream.on('data', (chunk) => {
           i+=1
-          data = chunk.replace(/\n[0-9]+/,'')
-          data = data.replace(/[^a-zA-Z0-9\n ]/g, '')
-          res.write(data);
+          //data = chunk.replace(/\n[0-9]+/,'')
+          //data = data.replace(/[^a-zA-Z0-9\n ]/g, '')
+          res.write(chunk);
           if(i > 25) {
             res.end()
             stream.close()
