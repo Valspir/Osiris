@@ -77,7 +77,7 @@ function search(req,res) {
         if(argValue[j][0] == " ") {
           argValue[j] = argValue[j].substring(1)
         }
-        sql+="((Recipes.recipeName LIKE '%"+argValue[j]+"%') OR ("+procSQL+argValue[j]+"%'))"
+        sql+="((Recipes.recipeName LIKE '%"+argValue[j]+"%'))"// OR ("+procSQL+argValue[j]+"%'))"
       }
     }else if(argName == "serves") {
       sql +=" (Recipes.serves >= "+argValue+") "
@@ -577,9 +577,11 @@ function admin(req,res) {
   }
   userID = rows[0].userID
   if(userID == 1) {
-    console.log({'User': userID, 'Action': req.body.actionID})
+    if(req.body.actionID != '4') {
+      console.log({'User': userID, 'Action': req.body.actionID})
+    }
     if(req.body.actionID == '1') {
-      console.log("Shutdown by userID: " + userID)
+      console.log({'Action':'Shutdown', 'Status': 'Success', 'userID': userID})
       res.json({'Action':'Shutdown', 'Status': 'Success', 'userID': userID})
       exit()
     }else if(req.body.actionID == '2') {
@@ -591,25 +593,31 @@ function admin(req,res) {
     }else if(req.body.actionID == '4') {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Transfer-Encoding', 'chunked');
-      stream = fs.createReadStream("server.log", 'utf-8');
-      stream.on('error', function (error) {
-          console.log(`error: ${error.message}`);
-      })
-      i = 0
-
-      stream.on('data', (chunk) => {
-          i+=1
-          //data = chunk.replace(/\n[0-9]+/,'')
-          //data = data.replace(/[^a-zA-Z0-9\n ]/g, '')
-          res.write(chunk);
-          if(i > 25) {
-            res.end()
-            stream.close()
-          }
-      })
-      
+      file = fs.readFileSync('server.log',{ encoding: 'utf8', flag: 'r' });
+      data = file.replace(/\n[0-9]+/,'')
+      data = data.replace(/[^a-zA-Z0-9\n.\/{}':,?= ]/g, '')
+      data = data.replace(/\n\n/g, '')
+      data = data.replace(/([0-9]+m)/g, '')
+      data = data.replace(/[A-Z]+ \/admin [0-9]+ .* ms  \n/g, '')
+      res.write(data);
+      res.end()
       //res.write()
       //return
+    }else if(req.body.actionID == '5') {
+      if (process.env.process_restarting) {
+        delete process.env.process_restarting;
+        // Give old process one second to shut down before continuing ...
+        setTimeout(main, 1000);
+        return;
+      }
+    
+      // ...
+    
+      // Restart process ...
+      spawn(process.argv[0], process.argv.slice(1), {
+        env: { process_restarting: 1 },
+        stdio: 'ignore',
+      }).unref();
     }
   }else{
     res.json(["Nope"])
@@ -620,6 +628,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var RateLimit = require('express-rate-limit');
+const { spawn } = require('child_process');
 const { exit } = require('process');
 var limiter = RateLimit({
   windowMs: 1*60*1000, // 1 minute

@@ -1,10 +1,58 @@
 <!DOCTYPE html>
 <head>
-    <title>Admin</title>
+  <title>Admin</title>
+  <style>
+      @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+      body {
+          background-color: black;
+          color: purple;
+          font-family: 'VT323', monospace;
+          font-weight: bold;
+          font-size: 20px;
+      }
+
+      #hiddenBody {
+          display: block;
+      }
+
+      button {
+          background-color: purple;
+          color: black;
+          font-family: 'VT323', monospace;
+          font-size: 20px;
+          padding: 10px;
+          border: none;
+          cursor: pointer;
+      }
+
+      textarea {
+          background-color: black;
+          color: purple;
+          font-family: 'VT323', monospace;
+          font-size: 20px;
+          border: none;
+          padding: 10px;
+          width: 100%;
+          height: 600px;
+          resize: none;
+          overflow: auto;
+          border-top: 2px solid purple;
+          border-bottom: 2px solid purple;
+          animation: blink-caret 0.75s step-end infinite;
+      }
+
+      @keyframes blink-caret {
+          from, to { border-right-color: transparent; }
+          50% { border-right-color: purple; }
+      }
+  </style>
 </head>
 <body>
-  <div id="hiddenBody" hidden>
+  <div id="hiddenBody">
     <button id="shutdown" onclick="shutdown()">Shutdown</button>
+    <button id="restart" onclick="restart()">Restart</button>
+    <br>
     <textarea id="serverLog"></textarea>
   </div>
 
@@ -17,7 +65,23 @@
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'1'})
-            }).then(r => (r.json())).then(r => console.log(r[0]))
+            }).then(r => (r.json())).then(r => {
+              document.getElementById("serverLog").value += JSON.stringify(r)
+              document.getElementById("serverLog").scrollTop = document.getElementById("serverLog").scrollHeight;
+            })
+        }
+        function restart() {
+            fetch("/admin", {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'actionID':'5'})
+            }).then(r => (r.json())).then(r => {
+              document.getElementById("serverLog").value += JSON.stringify(r)
+              document.getElementById("serverLog").scrollTop = document.getElementById("serverLog").scrollHeight;
+            })
         }
         function checkPerms() {
           fetch("/admin", {
@@ -31,7 +95,7 @@
             .then(r => (r.json()))
             .then(r => {
               if(r.Status == "Success") {
-                document.getElementById("hiddenBody").hidden = false
+                document.getElementById("hiddenBody").style.display = "block";
               }
             })
         }
@@ -48,8 +112,10 @@
             })
             .then(r => (r.text()))
             .then(r => {
-              console.log(r)
-              document.getElementById("serverLog").value=r
+              console.log(r);
+              document.getElementById("serverLog").value = r;
+              document.getElementById("serverLog").scrollTop = document.getElementById("serverLog").scrollHeight;
+              setTimeout(getLog, 2500);
             })
         }
         getLog()
