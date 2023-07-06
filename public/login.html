@@ -1,16 +1,59 @@
 <!DOCTYPE html>
+<html>
 <head>
-  <title>Login</title>
+  <title>Login/Register</title>
   <script src="loginScript.js"></script>
-  <stylesheet src="loginStyle.css"/>
+  <script src="registerScript.js"></script>
+  <link rel="stylesheet" href="loginStyle.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<form>
-  <input type="email" id="email" name="email" placeholder="Email">
-  <input type="password" id="password" name="password" placeholder="Password">
-  <input type="button" value="Login" onclick="login()">
-</form>
-<a href="/register.html">Register Here</a>
+  <header>
+    <div class="container">
+      <h1>Osiris Meal Planner</h1>
+      <nav>
+        <ul>
+          <li><a href="/index.html">Home</a></li>
+          <li><a href="/meals.html">My Meals</a></li>
+          <li><a id="loginBtn" href="*">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+<div class="container">
+  <div class="split left">
+    <form>
+      <h2>Login</h2>
+      <div class="form-group">
+        <label for="regEmail">Email:</label>
+        <input type="email" id="loginEmail" name="email" placeholder="Email">
+      </div>
+      <div class="form-group">
+        <label for="regPassword">Password:</label>
+        <input type="password" id="loginPassword" name="password" placeholder="Password">
+      </div>
+      <button onclick="login()">Login</button>
+    </form>
+  </div>
+  <div class="split right">
+    <form>
+      <h2>Register</h2>
+      <div class="form-group">
+        <label for="regFName">First Name:</label>
+        <input id="regFName" type="text" name="fName" placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label for="regEmail">Email:</label>
+        <input id="regEmail" type="email" name="email" placeholder="Email">
+      </div>
+      <div class="form-group">
+        <label for="regPassword">Password:</label>
+        <input id="regPassword" type="password" name="password" placeholder="Password">
+      </div>
+      <button onclick="register()">Submit</button>
+    </form>
+  </div>
+</div>
 <script>
   function mae() {
     creds = ["mae@groovy.com","P4ssw0rd!"]
@@ -32,7 +75,98 @@
   }))
   }
 </script>
-<h>!!!!!!!!!!! REMOVE ME !!!!!!!!!!!</h>
+<h1>!!!!!!!!!!! REMOVE ME !!!!!!!!!!!</h1>
 <p> Login as Mae</p><button onclick="mae()">Mae!!!!</button>
 </body>
 </html>
+
+<style>
+  * {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.split {
+  flex: 1;
+  padding: 50px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.left {
+  background-color: #f9f9f9;
+}
+
+.right {
+  background-color: #fff;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+form {
+  margin-bottom: 40px;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+label {
+  flex: 1;
+  font-size: 20px;
+  margin-bottom: 0;
+  margin-right: 10px;
+}
+
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  flex: 3;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+}
+
+button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+a {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+}
+
+</style>

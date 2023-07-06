@@ -113,8 +113,15 @@
             .then(r => (r.text()))
             .then(r => {
               console.log(r);
-              document.getElementById("serverLog").value = r;
-              document.getElementById("serverLog").scrollTop = document.getElementById("serverLog").scrollHeight;
+              sL =  document.getElementById("serverLog")
+              
+              if(sL.scrollTop > sL.scrollHeight-650) {
+                sL.value = r;
+                sL.scrollTop = sL.scrollHeight
+              }else{
+                console.log(sL.scrollTop +":"+ sL.scrollHeight)
+                sL.value = r;
+              }
               setTimeout(getLog, 2500);
             })
         }

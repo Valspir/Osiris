@@ -537,7 +537,6 @@ function mymeals(req,res) {
     row = rows[r]
     sql = `SELECT mealArr FROM Meals WHERE mealID = ${row.mealID}`
     sql_out = mealDB.prepare(sql).all()
-    console.log(sql_out[0]['mealArr'])
     str = sql_out[0]['mealArr'].split(",")
     for(s in str) {
       m = str[s]
@@ -604,6 +603,8 @@ function admin(req,res) {
       //res.write()
       //return
     }else if(req.body.actionID == '5') {
+      console.log({'Action':'Restart', 'Status': 'Success', 'userID': userID})
+      res.json({'Action':'Restart', 'Status': 'Success', 'userID': userID})
       if (process.env.process_restarting) {
         delete process.env.process_restarting;
         // Give old process one second to shut down before continuing ...

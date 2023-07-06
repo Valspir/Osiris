@@ -451,9 +451,7 @@
                     }
                     async function genMealPlan() {
                       sortList = document.getElementById('sortlist')
-                      if(sortList.childElementCount > 6) {
-                        sortList.innerHTML = ""
-                      }
+                      sortList.innerHTML = ""
                       fetch("/mealplan", {
                         method: 'POST',
                         headers: {
