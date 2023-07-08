@@ -1,6 +1,6 @@
 function login() {
-  email = document.getElementById("email").value.toLowerCase()
-  password = document.getElementById("password").value
+  email = document.getElementById("loginEmail").value.toLowerCase()
+  password = document.getElementById("loginPassword").value
   creds = [email,password]
   fetch('/login', {
     method: 'POST',
@@ -18,4 +18,3 @@ function login() {
     }
   }))
 }
-

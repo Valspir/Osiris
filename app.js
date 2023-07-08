@@ -7,6 +7,8 @@ var serveStatic = require('serve-static');
 var sqlite = require("better-sqlite3");
 const crypto = require("crypto");
 const fs = require('fs')
+var sanitizer = require('sanitize')();
+
 
 var usersDB = new sqlite("./data/Users.db");
 var db = new sqlite("./data/processedData.db");

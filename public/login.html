@@ -4,7 +4,6 @@
   <title>Login/Register</title>
   <script src="loginScript.js"></script>
   <script src="registerScript.js"></script>
-  <link rel="stylesheet" href="loginStyle.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,21 +21,21 @@
   </header>
 <div class="container">
   <div class="split left">
-    <form>
+    
       <h2>Login</h2>
       <div class="form-group">
-        <label for="regEmail">Email:</label>
+        <label for="loginEmail">Email:</label>
         <input type="email" id="loginEmail" name="email" placeholder="Email">
       </div>
       <div class="form-group">
-        <label for="regPassword">Password:</label>
+        <label for="loginPassword">Password:</label>
         <input type="password" id="loginPassword" name="password" placeholder="Password">
       </div>
       <button onclick="login()">Login</button>
-    </form>
+    
   </div>
   <div class="split right">
-    <form>
+    
       <h2>Register</h2>
       <div class="form-group">
         <label for="regFName">First Name:</label>
@@ -51,10 +50,32 @@
         <input id="regPassword" type="password" name="password" placeholder="Password">
       </div>
       <button onclick="register()">Submit</button>
-    </form>
+    
   </div>
 </div>
 <script>
+  function register() {
+  email = document.getElementById("regEmail").value.toLowerCase()
+  password = document.getElementById("regPassword").value
+  fName = document.getElementById("regFName").value
+  creds = [email,password,fName]
+  fetch('/register', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(creds)
+  }).then((res) => res.json().then((response) => {
+    if(response.status == "Success") {
+      console.log(response)
+      sessionStorage.setItem("sessionID", response.sessionID)
+      //document.location = "/"
+    }
+  }))
+
+}
+
   function mae() {
     creds = ["mae@groovy.com","P4ssw0rd!"]
     fetch('/login', {
