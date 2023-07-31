@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Mae</title>
+    <style>
+        /* Add your custom CSS here */
+        /* For simplicity, you can also link an external CSS file */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 30px 0;
+
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .profile-info {
+            z-index: -1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Change align-items to flex-start */
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-right: 20px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+        p {
+            margin-bottom: 5px;
+        }
+        .pronouns {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .project-container {
+            width: 80%;
+            float: right;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .project-images {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        .project-images a {
+            margin: 0 10px;
+            text-align: center;
+        }
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <div id='headContainer'>
+            <div class="project-container"> <!-- Move this div to the top of the header -->
+                <h2>Projects</h2>
+                <div class="project-images">
+                    <a href="index.html">
+                        <img src="meals.png" alt="Meal Planner" width="450px" height="300px">
+                    </a>
+                    <a href="project2.html">
+                        <img src="project2-thumbnail.jpg" alt="Project 2">
+                    </a>
+                    <!-- Add more project images as needed -->
+                </div>
+            </div>
+            <div class="profile-info"> <!-- Move this div below the project-container div -->
+                <img class="profile-img" src="profile.png">
+                <h1>Mae Young</h1>
+                <p class="pronouns">She/Her</p>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <h2>About Me</h2>
+        <p>
+            Hi, I'm Mae Young, a passionate web developer with a strong desire to create meaningful and user-friendly experiences on the web. I have a solid proficiency in various programming languages, including C, Python, HTML, Bash, CSS, PHP, JavaScript, VBA, PowerShell, and Java. My focus is on building efficient and innovative solutions, and my problem-solving skills allow me to tackle challenges with ease. I thrive in collaborative environments and enjoy staying abreast of the latest technologies in the field.
+        </p>
+
+        <h2>Education</h2>
+        <p>
+            <strong>High School Qualifications</strong><br>
+            - Queensland Certificate of Education<br>
+            - Certificate III in IDMT (Merit & Vocational Excellence)<br>
+            - Certificate II in Creative Industries
+        </p>
+
+        <h2>Skills</h2>
+        <ul class="skills-list">
+            <li>Programming: Python, JS, PHP, HTML, CSS, VBA, PowerShell, C, C#, SQL (SQLite3, MS SQL, MySQL)</li>
+        </ul>
+
+        <h2>Personal Interests</h2>
+        <p>
+            In addition to my love for web development, I enjoy staying up-to-date with the latest technological advancements and actively participate in online IT-related forums and communities. I'm also passionate about micro-electronics projects and exploring the exciting world of programming beyond the scope of my work.
+        </p>
+
+        <h2>Contact Information</h2>
+        <p>
+            Email: connormwyoung@gmail.com
+        </p>
+        <a href="https://github.com/Valspir" target="_blank" class="github-button">
+            <img src="gh.png" alt="GitHub" width="50" height="50">
+        </a>
+        <a href="mailto:connormwyoung@gmail.com" class="cta-button">Contact Me</a>
+
+    </div>
+
+</body>
+</html>

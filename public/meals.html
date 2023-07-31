@@ -38,11 +38,180 @@
       </style>
     </header>
     <main>
-      <center>
         <div id="mealGrid"></div>
-      </center>
     </main>
     <script>
+      function createRecipeInfo(recipe, blank=0) {
+                      if(blank == 1) {
+                        const listItem = document.createElement('li');
+                        const recipeDetails = document.createElement("div");
+
+                        // Create recipe container
+                        const recipeContainer = document.createElement('div');
+                        recipeContainer.recipeID = -1
+                        recipeContainer.classList.add('recipe-container');
+                        listItem.appendChild(recipeContainer);
+
+                        //Recipe Name
+                        const recipeName = document.createElement("p");
+                        recipeName.innerHTML = `<strong class="recipe-name">No Recipe Selected</strong>`;
+                        recipeContainer.appendChild(recipeName);
+
+                        const rerollBtn = document.createElement('input'); // add this line
+                        rerollBtn.type = "image"
+                        rerollBtn.src = "images/dice.png"
+                        rerollBtn.height = 25
+                        rerollBtn.width = 25
+                        rerollBtn.alt = "Re-Roll"
+                        rerollBtn.classList.add('reroll-btn'); // add this line
+                        recipeContainer.appendChild(rerollBtn);
+
+                        recipeContainer.addEventListener('click', (event) => {
+                          if(event.target.classList.contains('reroll-btn')){
+                            event.stopPropagation()
+                            //console.log(event.target)
+                            fetch("/mealplan", {
+                              method: 'POST',
+                              headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'bad':event.target.recipeID})
+                            })
+                              .then(r => r.json())
+                              .then(newRecipe => {
+                                const newRecipeCard = createRecipeInfo(newRecipe[0]);
+                                listItem.replaceWith(newRecipeCard);
+                                slist(document.getElementById("sortlist"));
+                              });
+                           }
+                        });
+                        return listItem
+                      }
+                      //console.log(recipe)
+                      const listItem = document.createElement('li');
+
+
+                      const recipeDetails = document.createElement("div");
+
+                      // Create recipe container
+                      const recipeContainer = document.createElement('div');
+                      recipeContainer.recipeID = recipe.recipeID
+                      recipeContainer.classList.add('recipe-container');
+                      listItem.appendChild(recipeContainer);
+
+                      //Recipe Name
+                      const recipeName = document.createElement("p");
+                      recipeName.innerHTML = `<strong class="recipe-name">${recipe.recipeName}</strong>`;
+                      recipeContainer.appendChild(recipeName);
+
+                      const buttonContainer = document.createElement('div')
+
+                      const likeBtn = document.createElement('input'); // add this line
+                      likeBtn.type = "image"
+                      likeBtn.src = "images/like.png"
+                      likeBtn.height = 25
+                      likeBtn.width = 25
+                      likeBtn.alt = "Like"
+                      likeBtn.classList.add('like-btn'); // add this line
+                      likeBtn.recipeID = recipe.recipeID
+                      buttonContainer.appendChild(likeBtn);
+
+                      const rerollBtn = document.createElement('input'); // add this line
+                      rerollBtn.type = "image"
+                      rerollBtn.src = "images/dice.png"
+                      rerollBtn.height = 25
+                      rerollBtn.width = 25
+                      rerollBtn.alt = "Re-Roll"
+                      rerollBtn.classList.add('reroll-btn'); // add this line
+                      rerollBtn.recipeID = recipe.recipeID
+                      buttonContainer.appendChild(rerollBtn);
+
+                      const removeBtn = document.createElement('input'); // add this line
+                      removeBtn.type = "image"
+                      removeBtn.src = "images/remove.png"
+                      removeBtn.height = 25
+                      removeBtn.width = 25
+                      removeBtn.alt = "Remove"
+                      removeBtn.classList.add('remove-btn'); // add this line
+                      buttonContainer.appendChild(removeBtn);
+
+                      recipeContainer.appendChild(buttonContainer)
+
+                      listItem.addEventListener('click', (event) => {
+                         if (!event.target.classList.contains('reroll-btn') && !event.target.classList.contains('remove-btn') && !event.target.classList.contains('like-btn') && !event.target.classList.contains('left-btn')) {
+                           //event.stopPropagation();
+                           if (listItem.classList.contains('expanded')) {
+                             listItem.classList.toggle('expanded');
+                           } else {
+                             const expandedCards = document.querySelectorAll('.expanded');
+                             expandedCards.forEach((card) => card.classList.toggle('expanded'));
+                             listItem.classList.add('expanded');
+                           }
+                         }else if(event.target.classList.contains('reroll-btn')){
+                           event.stopPropagation()
+                           //console.log(event.target)
+                           fetch("/mealplan", {
+                             method: 'POST',
+                             headers: {
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'bad':event.target.recipeID})
+                           })
+                             .then(r => r.json())
+                             .then(newRecipe => {
+                               const newRecipeCard = createRecipeInfo(newRecipe[0]);
+                               listItem.replaceWith(newRecipeCard);
+                               slist(document.getElementById("sortlist"));
+                             });
+                         }else if(event.target.classList.contains('remove-btn')) {
+                           event.stopPropagation()
+                           listItem.replaceWith(createRecipeInfo(0,1))
+                         }else if(event.target.classList.contains('like-btn')){
+                           event.stopPropagation();
+                           fetch("/like", {
+                             method: 'POST',
+                             headers: {
+                               'Accept': 'application/json',
+                               'Content-Type': 'application/json'
+                             },
+                             body: JSON.stringify({'sessionID':sessionStorage.getItem("sessionID"),'recipeID':event.target.recipeID})
+                           });
+                           recipeContainer.parentElement.style.border = "1px solid blue"
+                        }
+                      });
+
+                      //Instructions & Ingredients (not modified)
+                      steps=""
+                      JSON.parse(recipe.steps).forEach(step => {
+                        steps+="<br><br>    -"+step
+                      });
+                      ingredients = ""
+                      recipe.ingredients.forEach(ingredient => {
+                        ingredients+="<br>    -"+ingredient.procText
+                      });
+
+                      //Expanded data (not modified)
+                      recipeDetails.classList.add("recipe-details");
+                      recipeDetails.innerHTML = `
+                        <p><strong>Recipe ID:</strong> ${recipe.recipeID}
+                        <p><strong>Prep Time:</strong> ${recipe.prepTime}</p>
+                        <p><strong>Cook Time:</strong> ${recipe.cookTime}</p>
+                        <p><strong>Servings:</strong> ${recipe.serves}</p>
+                        <p><strong>Saves:</strong> ${recipe.saves}</p>
+                        <p><strong>(Very) Rough Cost:</strong> ${Math.round(Math.floor(parseFloat(recipe.cost)*100),0)/100}</p>
+                        <p><strong>Instructions:</strong>${steps}</p>
+                        <br>
+                        <p><strong>Ingredients:</strong>${ingredients}</p>
+                      `;
+                      recipeDetails.recipeID = recipe.recipeID
+
+                      listItem.appendChild(recipeDetails);
+
+                      listItem.classList.add("slist-item")
+                      return listItem;
+                    }
       function loadMeals() {
         const mealGrid = document.getElementById('mealGrid');
         fetch("/myMeals", {
@@ -58,12 +227,17 @@
           if (recipes[0] !== "LoggedOut") {
             for (let i = 0; i < recipes.length; i++) {
               const mealDiv = document.createElement('div');
-              mealDiv.classList.add('mealDiv');
-              const meals = recipes[i].toString().split(",");
+              mealDiv.classList.add('slist')
+              const meals = recipes[i]
               for (let j = 0; j < meals.length; j++) {
-                const p = document.createElement('p');
-                p.textContent = meals[j];
-                mealDiv.appendChild(p);
+                if(meals[j] != "No Recipe") {
+                  const listItem = createRecipeInfo(meals[j]);
+                  
+                  mealDiv.appendChild(listItem);
+                }else{
+                  const listItem = createRecipeInfo(meals[j],1);
+                  mealDiv.appendChild(listItem);
+                }
               }
               mealGrid.appendChild(mealDiv);
             }

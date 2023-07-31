@@ -28,6 +28,8 @@ async function get7recipes(req) {
   return rows;
 }
 
+sessions = []
+
 var access = fs.createWriteStream('server.log', 'utf-8');
 process.stdout.write = process.stderr.write = access.write.bind(access);
 
@@ -126,9 +128,11 @@ if(rows.length == 0) {
 function genMealPlan(req,res) {
   //console.log(allArgs)
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
 
   userTastes = []
   sql = `SELECT recipeID,recipeRating FROM 'userTastes' WHERE userID = '${userID}' ORDER BY recipeRating DESC LIMIT 50`
@@ -323,9 +327,11 @@ function the_ALGORITHM(user, i) {
 
 function like(req, res) {
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
 
   rating = 0
   sql = `SELECT recipeRating FROM userTastes WHERE userID = '${userID}' AND recipeID = '${req.body.recipeID}'`
@@ -344,12 +350,13 @@ function login(req,res) {
   email=req.body[0]
   passwordHash = req.body[1]
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE email='${email}' AND passwordHash='${passwordHash}'`
-  var rows=usersDB.prepare(sql).all()
+  sql = `SELECT userID FROM userInfo WHERE email=? AND passwordHash=?`
+  var rows=usersDB.prepare(sql).all(email,passwordHash)
   if(rows.length != 0) {
     const id = crypto.randomBytes(16).toString("hex");
-    sql = `UPDATE userInfo SET sessionID = '${id}' WHERE userID='${rows[0].userID}'`
-    var rows=usersDB.prepare(sql).run()
+    /*sql = `UPDATE userInfo SET sessionID = '${id}' WHERE userID='${rows[0].userID}'`
+    var rows=usersDB.prepare(sql).run()*/
+    sessions.push([rows[0].userID,id])
     res.json({"status":"Success", "sessionID":id})
   }else{
     console.log(req.body)
@@ -362,9 +369,11 @@ function saveAltRecipes(req,res) {
   mealArr = req.body.altRecipes
   console.log(mealArr)
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
 
   sql = `UPDATE userMeals SET alternateRecipes='${mealArr}' WHERE userID = ${userID}`
   usersDB.prepare(sql).run()
@@ -375,9 +384,10 @@ function save(req, res) {
   mealArr = req.body.mealPlan
 
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
   
   sql = `INSERT INTO Meals(mealArr) VALUES ('${mealArr}')`
   mealDB.prepare(sql).run()
@@ -393,14 +403,16 @@ function save(req, res) {
 
 function getCurrentMeal(req, res) {
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
     res.json(["LoggedOut"])
     return
   }
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+  
   try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
     sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
     mealID = usersDB.prepare(sql).all()[0]['mealID']
 
@@ -441,12 +453,13 @@ function getCurrentMeal(req, res) {
 
 function getIngredients(req,res) {
   userID = -1
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
     res.json(["LoggedOut"])
     return
-  }
+  }*/
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
   userID = rows[0].userID
 
   sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
@@ -486,13 +499,14 @@ function getIngredients(req,res) {
 }
 
 function atMP(req,res) {
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
     res.json(["LoggedOut"])
     return
-  }
-  userID = rows[0].userID
+  }*/
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  //userID = rows[0].userID
 
   sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC LIMIT 1`
   rows = usersDB.prepare(sql).all()
@@ -514,8 +528,8 @@ function register(req,res) {
   console.lo
 
   
-  sql = `INSERT INTO userInfo(email,passwordHash,sessionID,firstName) VALUES ('${email}','${password}','${id}','${fName}')`
-  rows = usersDB.prepare(sql).run()
+  sql = `INSERT INTO userInfo(email,passwordHash,sessionID,firstName) VALUES (?,?,?,?)`
+  rows = usersDB.prepare(sql).run(email,password,id,fName)
 
 
   res.json({"status":"Success", "sessionID":id})
@@ -523,20 +537,22 @@ function register(req,res) {
 
 function mymeals(req,res) {
   allMeals = []
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
     res.json(["LoggedOut"])
     return
   }
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
 
   sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC`
-  rows = usersDB.prepare(sql).all()
-  
-  for(r in rows) {
+  mealRows = usersDB.prepare(sql).all()
+  for(r in mealRows) {
+    row = mealRows[r]
     mealPlan = []
-    row = rows[r]
+    
+    //console.log(row)
     sql = `SELECT mealArr FROM Meals WHERE mealID = ${row.mealID}`
     sql_out = mealDB.prepare(sql).all()
     str = sql_out[0]['mealArr'].split(",")
@@ -545,9 +561,14 @@ function mymeals(req,res) {
       if(m == -1) {
         mealPlan.push("No Recipe")
       }else if(m != "") {
-        sql = `SELECT recipeName FROM Recipes WHERE recipeID = ${m}`
-        sql_out = db.prepare(sql).all()
-        mealPlan.push(sql_out[0]['recipeName'])
+        sql = `SELECT * FROM Recipes WHERE recipeID=${m}`
+        rows = db.prepare(sql).all();
+        
+        ingRow = rows[0]
+        sql = `SELECT AD.altText as procText FROM (SELECT Ingredients.recipeID as recipeID, Ingredients.ingredientID as ingredientID, AltText.altText as altText FROM Ingredients INNER JOIN AltText ON Ingredients.ingredientID=AltText.ingredientID WHERE Ingredients.recipeID=${ingRow.recipeID} GROUP BY AltText.ingredientID) as AD INNER JOIN Recipes ON AD.recipeID=Recipes.recipeID`
+        ret = db.prepare(sql).all();
+        ingRow.ingredients = ret
+        mealPlan.push(ingRow)
       }
     }
     allMeals.push(mealPlan)
@@ -556,27 +577,32 @@ function mymeals(req,res) {
 }
 
 function getUserInfo(req,res) {
-  sql = `SELECT firstName,userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
-  rows = usersDB.prepare(sql).all()
+  try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+    sql = `SELECT firstName FROM userInfo WHERE userID = ${userID}`
+    rows = usersDB.prepare(sql).all()
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
   if(rows.length == 0) {
-    res.json(["LoggedOut"])
+    res.json(["Logged Out"])
     return
   }
   fName = rows[0].firstName
-  userID = rows[0].userID
   res.json([fName,userID])
 }
 
 function admin(req,res) {
-  //console.log(req.body.sessionID)
-  sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
+  /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   if(rows.length == 0) {
     console.log("LO")
     res.json(["LoggedOut"])
     return
   }
-  userID = rows[0].userID
+  userID = rows[0].userID*/
+  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
   if(userID == 1) {
     if(req.body.actionID != '4') {
       console.log({'User': userID, 'Action': req.body.actionID})
@@ -586,7 +612,6 @@ function admin(req,res) {
       res.json({'Action':'Shutdown', 'Status': 'Success', 'userID': userID})
       exit()
     }else if(req.body.actionID == '2') {
-      console.log(__dirname+'adm/admin.html')
       res.redirect('admin.html');
     }else if(req.body.actionID == '3') {
       res.json({'Status':'Success'})
@@ -648,9 +673,9 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 app.use(limiter);
-app.use(serveStatic('public', { index: ['index.html']}));
+//app.use(serveStatic('public', { index: ['index.html']}));
 app.use('/recipes', async (req,res) => get7recipes(req).then(r => res.json(r)));
 app.use('/search', async (req,res) => search(req,res))//.then(r => res.json(r)));
 app.use('/mealplan', async (req,res) => genMealPlan(req,res))
@@ -666,6 +691,7 @@ app.use('/register', async (req,res) => register(req,res))
 app.use('/myMeals', async (req,res) => mymeals(req,res))
 app.use('/getUserInfo', async (req,res) => getUserInfo(req,res))
 app.use('/admin', async (req,res) => admin(req,res))
+app.use('/', serveStatic('public', { index: ['landing.html']}))
 
 
 // catch 404 and forward to error handler
