@@ -527,7 +527,7 @@
                       })
                         .then(r => (r.json()))
                         .then(info => {
-                          if(info[0] != "LoggedOut") {
+                          if(info[0] != "Logged Out") {
                             if(info[1] == 1) {
                               document.getElementById("loginBtn").href = ""
                               document.getElementById("loginBtn").outerHTML = "<a href='#' id='loginBtn' onclick='adminCheck(this)'></p>"

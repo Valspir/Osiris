@@ -8,6 +8,7 @@ var sqlite = require("better-sqlite3");
 const crypto = require("crypto");
 const fs = require('fs')
 var sanitizer = require('sanitize')();
+var serveIndex = require('serve-index');
 
 
 var usersDB = new sqlite("./data/Users.db");
@@ -51,69 +52,65 @@ function search(req,res) {
   var db = new sqlite("./data/processedData.db");
   rowArr = []
   rows = []
+  sql = ""
+
+  allArgs = decodeURI(req["_parsedUrl"]["query"]).split("&")
   try {
-  allArgs = decodeURI(req["_parsedOriginalUrl"]["query"]).split("&")
-  //var db = new sqlite("./data/processedData.db");
-  let procSQL = "(SELECT procText FROM AltText WHERE ingredientID=Ingredients.ingredientID LIMIT 1) LIKE '%"
-  sql = "SELECT DISTINCT Recipes.recipeID as recipeID, recipeName, steps, saves, cost, serves, prepTime, cookTime FROM Recipes INNER JOIN Ingredients ON Recipes.recipeID=Ingredients.recipeID WHERE "
+    
+    //var db = new sqlite("./data/processedData.db");
+    let procSQL = "(SELECT procText FROM AltText WHERE ingredientID=Ingredients.ingredientID LIMIT 1) LIKE '%"
+    sql = "SELECT DISTINCT Recipes.recipeID as recipeID, recipeName, steps, saves, cost, serves, prepTime, cookTime FROM Recipes INNER JOIN Ingredients ON Recipes.recipeID=Ingredients.recipeID WHERE "
 
-  for(let i = 0; i < allArgs.length; i++) {
-    if(i != 0 && i != allArgs.length-1) {
-      sql+= "AND"
-    }
-    /*if(i%100 || i == allArgs.length-1) {
-      rows = db.prepare(sql).all();
-      for(row in rows) {
-        rowArr.push(rows[row])
+    for(let i = 0; i < allArgs.length; i++) {
+      if(i != 0 && i != allArgs.length-1) {
+        sql+= "AND"
       }
-      sql = "SELECT DISTINCT Recipes.recipeID as recipeID, recipeName, steps, saves, cost, serves, prepTime, cookTime FROM Recipes INNER JOIN Ingredients ON Recipes.recipeID=Ingredients.recipeID WHERE "
-
-    }*/
-    show=0
-    var argName = allArgs[i].split("=")[0];
-    var argValue = allArgs[i].split("=")[1];
-    if(argName == "keywords") {
-      argValue = argValue.replace(/\+/g, " ").replace("%2C",",").split(",")
-      for(let j = 0; j < argValue.length; j++) {
-        if(j > 0) {
-          sql += " AND "
-        }var db = new sqlite("./data/processedData.db");
-        if(argValue[j][0] == " ") {
-          argValue[j] = argValue[j].substring(1)
+      /*if(i%100 || i == allArgs.length-1) {
+        rows = db.prepare(sql).all();
+        for(row in rows) {
+          rowArr.push(rows[row])
         }
-        sql+="((Recipes.recipeName LIKE '%"+argValue[j]+"%'))"// OR ("+procSQL+argValue[j]+"%'))"
-      }
-    }else if(argName == "serves") {
-      sql +=" (Recipes.serves >= "+argValue+") "
-    }else if(argName == "prepTime") {
-      sql += " (Recipes.prepTime <= "+parseInt(argValue)+") "
-    }else if(argName == "cookTime") {
-      sql += " (Recipes.cookTime <= "+parseInt(argValue)+") "
-    }else if(argName == "show") {
-      show=1
-      sql +=" ORDER BY saves DESC LIMIT "+argValue
-    }
-  }
-  if(!show) {
-    sql += "ORDER BY saves DESC LIMIT 30"
-  }
-  rows = db.prepare(sql).all();
-}catch{
-  console.log("Invalid SQL Query")
-}
-if(rows.length == 0) {
-  res.json('Not Found')
-  return
-}var db = new sqlite("./data/processedData.db");
-  //rows = the_ALGORITHM(sql)
-  //sql = "SELECT * FROM Recipes WHERE "
-  /*for(row in rows) {
-    if(row != 0) {
-      sql += " OR "
-    }
-    sql += `recipeID=${rows[row]}`
-  }*/
+        sql = "SELECT DISTINCT Recipes.recipeID as recipeID, recipeName, steps, saves, cost, serves, prepTime, cookTime FROM Recipes INNER JOIN Ingredients ON Recipes.recipeID=Ingredients.recipeID WHERE "
 
+      }*/
+      show=0
+      var argName = allArgs[i].split("=")[0];
+      var argValue = allArgs[i].split("=")[1];
+      if(argName == "keywords") {
+        argValue = argValue.replace(/\+/g, " ").replace("%2C",",").split(",")
+        for(let j = 0; j < argValue.length; j++) {
+          if(j > 0) {
+            sql += " AND "
+          }var db = new sqlite("./data/processedData.db");
+          if(argValue[j][0] == " ") {
+            argValue[j] = argValue[j].substring(1)
+          }
+          sql+="((Recipes.recipeName LIKE '%"+argValue[j]+"%'))"// OR ("+procSQL+argValue[j]+"%'))"
+        }
+      }else if(argName == "serves") {
+        sql +=" (Recipes.serves >= "+argValue+") "
+      }else if(argName == "prepTime") {
+        sql += " (Recipes.prepTime <= "+parseInt(argValue)+") "
+      }else if(argName == "cookTime") {
+        sql += " (Recipes.cookTime <= "+parseInt(argValue)+") "
+      }else if(argName == "show") {
+        show=1
+        sql +=" ORDER BY saves DESC LIMIT "+argValue
+      }
+    }
+    if(!show) {
+      sql += "ORDER BY saves DESC LIMIT 30"
+    }
+    rows = db.prepare(sql).all();
+  }catch{
+    console.log(allArgs)
+    console.log("Invalid SQL Query")
+  }
+  if(rows.length == 0) {
+    res.json('Not Found')
+    return
+  }
+  var db = new sqlite("./data/processedData.db");
   allInfo = []
   for(i = 0; i < rows.length; i++) {
     row = rows[i]
@@ -132,7 +129,17 @@ function genMealPlan(req,res) {
   rows = usersDB.prepare(sql).all()
   userID = rows[0].userID*/
 
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  try {
+      try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
 
   userTastes = []
   sql = `SELECT recipeID,recipeRating FROM 'userTastes' WHERE userID = '${userID}' ORDER BY recipeRating DESC LIMIT 50`
@@ -331,7 +338,12 @@ function like(req, res) {
   rows = usersDB.prepare(sql).all()
   userID = rows[0].userID*/
 
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
 
   rating = 0
   sql = `SELECT recipeRating FROM userTastes WHERE userID = '${userID}' AND recipeID = '${req.body.recipeID}'`
@@ -373,7 +385,12 @@ function saveAltRecipes(req,res) {
   rows = usersDB.prepare(sql).all()
   userID = rows[0].userID*/
 
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
 
   sql = `UPDATE userMeals SET alternateRecipes='${mealArr}' WHERE userID = ${userID}`
   usersDB.prepare(sql).run()
@@ -387,7 +404,12 @@ function save(req, res) {
   /*sql = `SELECT userID FROM userInfo WHERE sessionID = '${req.body.sessionID}'`
   rows = usersDB.prepare(sql).all()
   userID = rows[0].userID*/
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+    try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
   
   sql = `INSERT INTO Meals(mealArr) VALUES ('${mealArr}')`
   mealDB.prepare(sql).run()
@@ -412,7 +434,12 @@ function getCurrentMeal(req, res) {
   userID = rows[0].userID*/
   
   try {
+      try {
     userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
     sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
     mealID = usersDB.prepare(sql).all()[0]['mealID']
 
@@ -459,8 +486,16 @@ function getIngredients(req,res) {
     res.json(["LoggedOut"])
     return
   }*/
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
-  userID = rows[0].userID
+  try {
+      try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
+  }catch{
+
+  }
 
   sql = `SELECT mealID FROM userMeals WHERE userID = '${userID}' ORDER BY mealID DESC LIMIT 1`
   mealID = usersDB.prepare(sql).all()[0]['mealID']
@@ -505,7 +540,12 @@ function atMP(req,res) {
     res.json(["LoggedOut"])
     return
   }*/
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+    try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
   //userID = rows[0].userID
 
   sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC LIMIT 1`
@@ -544,7 +584,12 @@ function mymeals(req,res) {
     return
   }
   userID = rows[0].userID*/
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+    try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
 
   sql = `SELECT mealID FROM userMeals WHERE userID = ${userID} ORDER BY mealID DESC`
   mealRows = usersDB.prepare(sql).all()
@@ -578,7 +623,12 @@ function mymeals(req,res) {
 
 function getUserInfo(req,res) {
   try {
+      try {
     userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
     sql = `SELECT firstName FROM userInfo WHERE userID = ${userID}`
     rows = usersDB.prepare(sql).all()
   }catch{
@@ -602,7 +652,12 @@ function admin(req,res) {
     return
   }
   userID = rows[0].userID*/
-  userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+    try {
+    userID = sessions.find(element => element[1]==req.body.sessionID)[0];
+  }catch{
+    res.json(["Logged Out"])
+    return
+  }
   if(userID == 1) {
     if(req.body.actionID != '4') {
       console.log({'User': userID, 'Action': req.body.actionID})
@@ -660,7 +715,7 @@ const { spawn } = require('child_process');
 const { exit } = require('process');
 var limiter = RateLimit({
   windowMs: 1*60*1000, // 1 minute
-  max: 40
+  max: 50
 });
 
 var app = express();
@@ -674,7 +729,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 //app.use(express.static(path.join(__dirname, 'public')));
-app.use(limiter);
+//app.use(limiter);
 //app.use(serveStatic('public', { index: ['index.html']}));
 app.use('/recipes', async (req,res) => get7recipes(req).then(r => res.json(r)));
 app.use('/search', async (req,res) => search(req,res))//.then(r => res.json(r)));
@@ -692,6 +747,7 @@ app.use('/myMeals', async (req,res) => mymeals(req,res))
 app.use('/getUserInfo', async (req,res) => getUserInfo(req,res))
 app.use('/admin', async (req,res) => admin(req,res))
 app.use('/', serveStatic('public', { index: ['landing.html']}))
+app.use('/sudoku', serveStatic(path.join(__dirname,'public/projects/sudoku-net'), { index: ['indexv2.5.html']}))
 
 
 // catch 404 and forward to error handler
