@@ -729,7 +729,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 //app.use(express.static(path.join(__dirname, 'public')));
-//app.use(limiter);
+app.use(limiter);
 //app.use(serveStatic('public', { index: ['index.html']}));
 app.use('/recipes', async (req,res) => get7recipes(req).then(r => res.json(r)));
 app.use('/search', async (req,res) => search(req,res))//.then(r => res.json(r)));
